@@ -1,5 +1,4 @@
-import requests
-from sqlite3 import *
+import requests,sqlite3
 
 def simp(mot):
     mot=mot.replace("Ã©","é")
@@ -21,18 +20,16 @@ def simp(mot):
     return mot
 
 def creer_dresseur(dresseur):
-    import sqlite3
     try:
-        #connexion à la bdd
         sqliteConnection = sqlite3.connect('WordPacks.db')
     except sqlite3.Error as error:
         print("Error while connecting to sqlite : ", error)
     
-    sql_select_Query = ("INSERT INTO dresseurs (nom) VALUES ('"+str(dresseur)+"')")
+    sql_select_Query = (f"INSERT INTO dresseurs (nom) VALUES ('{dresseur}')")
     cursor = sqliteConnection.cursor()
     cursor.execute(sql_select_Query)
 
-    print("dresseur "+str(dresseur)+" créé.")
+    print(f"dresseur {dresseur} créé.")
 
     sqliteConnection.commit()
     
@@ -40,8 +37,7 @@ def creer_dresseur(dresseur):
         sqliteConnection.close()
 
 def ouverture_booster(dresseur):
-    url = 'https://www.palabrasaleatorias.com/mots-aleatoires.php?fs=3&fs2=0&Submit=Nouveau+mot'
-    code = requests.get(url)
+    code = requests.get('https://www.palabrasaleatorias.com/mots-aleatoires.php?fs=3&fs2=0&Submit=Nouveau+mot')
     open('temp.txt', 'wb').write(code.content)
     import os
     liste=[]
@@ -53,7 +49,6 @@ def ouverture_booster(dresseur):
            simp(lines[118]),\
            simp(lines[124])\
            ]
-    print(liste)
     os.remove('temp.txt')
     capturer_mots(liste,dresseur)
     
@@ -61,67 +56,50 @@ def ouverture_booster(dresseur):
 
 #________________________________________________________________________
 def capturer_mots(mots,dresseur):
-    import sqlite3
     try:
-        #connexion à la bdd
         sqliteConnection = sqlite3.connect('WordPacks.db')
     except sqlite3.Error as error:
-        print("Error while connecting to sqlite : ", error)
-    sql_select_Query = "select * from dresseurs WHERE nom='"+str(dresseur)+"'"
+        print(f"Error while connecting to sqlite : {error}")
     cursor = sqliteConnection.cursor()
-    cursor.execute(sql_select_Query)
+    cursor.execute(f"select * from dresseurs WHERE nom='{dresseur}'")
     record = cursor.fetchall()
 
     id_dresseur=record[0][0]
 
     for mot_capture in mots:
         try:
-            sql_select_Query = ("INSERT INTO mots (nom,dresseur) VALUES ('"+str(mot_capture)+"','"+str(id_dresseur)+"')")
             cursor = sqliteConnection.cursor()
-            cursor.execute(sql_select_Query)
+            cursor.execute(f"INSERT INTO mots (nom,dresseur) VALUES ('{mot_capture}','{id_dresseur}')")
         except:
-            sql_select_Query = ("UPDATE mots SET dresseur = '"+str(id_dresseur)+"' WHERE nom = '"+str(mot_capture)+"'")
             cursor = sqliteConnection.cursor()
-            cursor.execute(sql_select_Query)
+            cursor.execute(f"INSERT INTO mots (nom,dresseur) VALUES ('{mot_capture}','{id_dresseur}')")
 
-    print("mots "+str(mots)+" capturés.")
+    print(f"mots {(', '.join([mot for mot in mots]))} capturés.")
 
     sqliteConnection.commit()
     
     if (sqliteConnection):
         sqliteConnection.close()
 
-
-
 #________________________________________________________________________
+
+
 def afficher_mots(dresseur):
-    import sqlite3
     try:
         #connexion à la bdd
         sqliteConnection = sqlite3.connect('WordPacks.db')
     except sqlite3.Error as error:
         print("Error while connecting to sqlite : ", error)
-    sql_select_Query = "select * from dresseurs WHERE nom='"+str(dresseur)+"'"
     cursor = sqliteConnection.cursor()
-    cursor.execute(sql_select_Query)
+    cursor.execute(f"select * from dresseurs WHERE nom='{dresseur}'")
     record = cursor.fetchall()
 
     id_dresseur,nom_dresseur=record[0]
 
-    sql_select_Query = "select * from mots WHERE mots.dresseur='"+str(id_dresseur)+"'"
     cursor = sqliteConnection.cursor()
-    cursor.execute(sql_select_Query)
+    cursor.execute(f"select * from mots WHERE mots.dresseur='{id_dresseur}'")
     record = cursor.fetchall()
 
-    print("Le dresseur {} possède les mots suivants :".format(nom_dresseur, ))
-    for raw in record:
-        print(raw[0])
+    print(f"Le dresseur {nom_dresseur} possède les mots suivants : {(', '.join([raw[0] for raw in record]))}")
     if (sqliteConnection):
         sqliteConnection.close()
-"""
-dresseur=str(input("créer un nom de dresseur (\"no\" pour skip):"))
-if dresseur!="no":
-    creer_dresseur(dresseur)  #sert à créer un nouveau dresseur
-ouverture_booster(dresseur)   #sert à ouvrir un booster et capturer ses mots
-afficher_mots("dionys")       #sert à montrer ta collection de mots
-"""
