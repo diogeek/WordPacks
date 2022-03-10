@@ -30,8 +30,6 @@ def creer_dresseur(dresseur):
     cursor = sqliteConnection.cursor()
     cursor.execute(sql_select_Query)
 
-    print(f"dresseur {dresseur} créé.")
-
     sqliteConnection.commit()
     
     if (sqliteConnection):
@@ -76,12 +74,12 @@ def capturer_mots(mots,dresseur):
             cursor = sqliteConnection.cursor()
             cursor.execute(f"INSERT INTO mots (nom,dresseur) VALUES ('{mot_capture}','{id_dresseur}')")
 
-    print(f"mots {(', '.join([mot for mot in mots]))} capturés.")
-
     sqliteConnection.commit()
     
     if (sqliteConnection):
         sqliteConnection.close()
+    
+    return(mots)
 
 #________________________________________________________________________
 
@@ -103,6 +101,7 @@ def afficher_mots(dresseur):
     cursor.execute(f"select * from mots WHERE mots.dresseur='{id_dresseur}'")
     record = cursor.fetchall()
 
-    print(f"Le dresseur {nom_dresseur} possède les mots suivants : {(', '.join([raw[0] for raw in record]))}")
     if (sqliteConnection):
         sqliteConnection.close()
+
+    return(record)
