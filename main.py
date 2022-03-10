@@ -24,6 +24,7 @@ def creer_dresseur(dresseur):
         sqliteConnection = sqlite3.connect('WordPacks.db')
     except sqlite3.Error as error:
         print("Error while connecting to sqlite : ", error)
+        break
     
     sql_select_Query = (f"INSERT INTO dresseurs (nom) VALUES ('{dresseur}')")
     cursor = sqliteConnection.cursor()
@@ -60,6 +61,7 @@ def capturer_mots(mots,dresseur):
         sqliteConnection = sqlite3.connect('WordPacks.db')
     except sqlite3.Error as error:
         print(f"Error while connecting to sqlite : {error}")
+        break
     cursor = sqliteConnection.cursor()
     cursor.execute(f"select * from dresseurs WHERE nom='{dresseur}'")
     record = cursor.fetchall()
@@ -90,13 +92,14 @@ def afficher_mots(dresseur):
         sqliteConnection = sqlite3.connect('WordPacks.db')
     except sqlite3.Error as error:
         print("Error while connecting to sqlite : ", error)
+        break
     cursor = sqliteConnection.cursor()
     cursor.execute(f"select * from dresseurs WHERE nom='{dresseur}'")
     record = cursor.fetchall()
 
     id_dresseur,nom_dresseur=record[0]
 
-    cursor = sqliteConnection.cursor()
+
     cursor.execute(f"select * from mots WHERE mots.dresseur='{id_dresseur}'")
     record = cursor.fetchall()
 
