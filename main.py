@@ -17,6 +17,7 @@ def simp(mot):
     mot=mot.replace("Ã´","ô")
     mot=mot.replace("Ã¶","ö")
     mot=mot.replace("</div>\n","")
+    mot=mot.lower()
     return mot
 
 def creer_dresseur(dresseur):
@@ -50,10 +51,10 @@ def ouverture_booster(dresseur):
            ]
     os.remove('temp.txt')
     capturer_mots(liste,dresseur)
-    
 
 
 #________________________________________________________________________
+
 def capturer_mots(mots,dresseur):
     try:
         sqliteConnection = sqlite3.connect('WordPacks.db')
