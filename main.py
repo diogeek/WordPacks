@@ -25,7 +25,7 @@ def creer_dresseur(dresseur):
         sqliteConnection = sqlite3.connect('WordPacks.db')
     except sqlite3.Error as error:
         print("Error while connecting to sqlite : ", error)
-        break
+        return
     
     sql_select_Query = (f"INSERT INTO dresseurs (nom) VALUES ('{dresseur}')")
     cursor = sqliteConnection.cursor()
@@ -60,7 +60,7 @@ def capturer_mots(mots,dresseur):
         sqliteConnection = sqlite3.connect('WordPacks.db')
     except sqlite3.Error as error:
         print(f"Error while connecting to sqlite : {error}")
-        break
+        return
     cursor = sqliteConnection.cursor()
     cursor.execute(f"select * from dresseurs WHERE nom='{dresseur}'")
     record = cursor.fetchall()
@@ -91,7 +91,7 @@ def afficher_mots(dresseur):
         sqliteConnection = sqlite3.connect('WordPacks.db')
     except sqlite3.Error as error:
         print("Error while connecting to sqlite : ", error)
-        break
+        return
     cursor = sqliteConnection.cursor()
     cursor.execute(f"select * from dresseurs WHERE nom='{dresseur}'")
     record = cursor.fetchall()
@@ -106,3 +106,41 @@ def afficher_mots(dresseur):
         sqliteConnection.close()
 
     return(record)
+
+#_________________________________________________________________________
+
+def echanger_mots(mot1,mot2,dresseur1,dresseur2):
+    try:
+        sqliteConnection = sqlite3.connect('WordPacks.db')
+    except sqlite3.Error as error:
+        print(f"Error while connecting to sqlite : {error}")
+        return
+    record1=0
+    record2=0
+    
+    cursor = sqliteConnection.cursor()
+    cursor.execute(f"select ID from dresseurs WHERE nom='{dresseur1}'")
+    record = cursor.fetchall()
+    cursor.execute(f"select nom from mots WHERE nom='{mot1}' and dresseur='{record[0][0]}'")
+    record = cursor.fetchall()
+    if record:
+        record1 = record[0][0]
+    
+    cursor = sqliteConnection.cursor()
+    cursor.execute(f"select ID from dresseurs WHERE nom='{dresseur2}'")
+    record = cursor.fetchall()
+    cursor.execute(f"select nom from mots WHERE nom='{mot2}' and dresseur='{record[0][0]}'")
+    record = cursor.fetchall()
+    if record:
+        record2 = record[0][0]
+    if not record1 and not record2:
+        return (f"{dresseur1} n'a pas le mot '{mot1}' et {dresseur2} n'a pas le mot '{mot2}'")
+    if not record1:
+        return (f"{dresseur1} n'a pas le mot '{mot1}'")
+    if not record2:
+        return (f"{dresseur2} n'a pas le mot '{mot2}'")
+    
+    cursor.execute(f"update mots set dresseur='{dresseur1}' where nom='{mot2}'")
+    cursor.execute(f"update mots set dresseur='{dresseur2}' where nom='{mot1}'")
+    return("échange réussi")
+
