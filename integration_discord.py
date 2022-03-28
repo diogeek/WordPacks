@@ -1,4 +1,5 @@
 import discord
+import os
 import main
 
 iencli = discord.Client()
@@ -9,11 +10,10 @@ dresseur1_trade=""
 dresseur2_trade=""
 dresseur1_mot=""
 dresseur2_mot=""
-dresseur1_complete=False
-dresseur2_complete=False
+half_complete=False
 
 @iencli.event
-async def on_ready(self):
+async def on_ready(self):275146542144
     print(f'Logged in as {user.name} - {user.id}')
 
 @iencli.event
@@ -48,14 +48,14 @@ entrez le mot que vous souhaitez échanger et utilisez tous les deux la commande
         
     elif message.content=="!kukujariv":
         main.creer_dresseur(str(message.author.id))
-        await message.channel.send(f"Dresseur @{message.author.id} créé ! Attrapez les tous ! :D")
+        await message.channel.send(f"Dresseur @{message.author.id} créé ! Attrapez les tous !")
 
     elif message.content=="!mokedex":
-        main.afficher_mots(str(message.author.id))
-        #await message.channel.send(f"Le dresseur @{message.author.id} possède les mots suivants : **{(', '.join([raw[0] for raw in record]))}**") CHANGER CA
+        record=main.afficher_mots(str(message.author.id))
+        await message.channel.send(f"Le dresseur @{message.author.id} possède les mots suivants : **{(', '.join([raw[0] for raw in record]))}**")
 
     elif message.content=="!booster":
-        main.ouverture_booster(str(message.author.id))
+        record=main.ouverture_booster(str(message.author.id))
         await message.channel.send(f"Bravo @{message.author.id} ! tu obtiens les mots suivants : **{(', '.join([raw[0] for raw in record]))}**")
 
     elif message.content.startswith("!echange "):
@@ -65,10 +65,18 @@ entrez le mot que vous souhaitez échanger et utilisez tous les deux la commande
 @{dresseur2_trade}, utilisez la commandes ```!accepter``` ou ```!refuser```.")
         else : await message.channel.send(f"Dresseur '{dresseur2_trade}' introuvable.")
 
-    #elif message.content.startswith("!mokedex"):
-        #main.afficher_mots(str(message.author.id))
-        #await message.channel.send(f"Le dresseur @{message.author.id} possède les mots suivants : {(', '.join([raw[0] for raw in record]))}")
+    elif trade_en_cours and message.author.id in [dresseur1_trade,dresseur2_trade] and [dresseur1_mot,dresseur2_mot][[dresseur1_trade,dresseur2_trade].index(message.author.id)]!="" and message.content=="!completer":
+        await message.channel.send(f"@{message.author.id} bloque le mot '{[dresseur1_mot,dresseur2_mot][[dresseur1_trade,dresseur2_trade].index(message.author.id)]}'.")
+        if half_complete:
+            await message.channel.send(main.echanger_mots(dresseur1_mot,dresseur2_mot,dresseur1_trade,dresseur2_trade))
+        else : half_complete=True
 
-iencli.run('ba4096d46aa2f237feca511cd518260010a92504d2ec588a5711b1f562de2aa2')
+    elif trade_en_cours and message.author.id in [dresseur1_trade,dresseur2_trade]:
+        [dresseur1_mot,dresseur2_mot][[dresseur1_trade,dresseur2_trade].index(message.author.id)]=check_mot(mot,message.author.id)
+        if [dresseur1_mot,dresseur2_mot][[dresseur1_trade,dresseur2_trade].index(message.author.id)]=="":
+            await message.channel.send(f"Le dresseur @{message.author.id} ne possède pas le mot '{message.content}'. Veuillez rééssayer.")
+        else : await message.channel.send(f"Le dresseur @{message.author.id} propose le mot '{message.content}' pour l'échange !")
+
+iencli.run(os.getenv('ba4096d46aa2f237feca511cd518260010a92504d2ec588a5711b1f562de2aa2'))
     
 print(f"mots {(', '.join([mot for mot in mots]))} capturés.")
