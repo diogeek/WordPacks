@@ -1,2 +1,3 @@
 
 discord_token.env
+*.env
