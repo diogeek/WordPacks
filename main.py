@@ -1,4 +1,5 @@
 import requests,sqlite3
+from bs4 import BeautifulSoup
 
 def simp(mot):
     mot=mot.replace("Ã©","é")
@@ -16,7 +17,8 @@ def simp(mot):
     mot=mot.replace("Ã¼","ü")
     mot=mot.replace("Ã´","ô")
     mot=mot.replace("Ã¶","ö")
-    mot=mot.replace("</div>\n","")
+    mot=mot.replace("</div>","")
+    mot=mot.replace("\n","")
     mot=mot.lower()
     return mot
 
@@ -36,20 +38,16 @@ def creer_dresseur(dresseur):
         sqliteConnection.close()
 
 def ouverture_booster(dresseur):
-    code = requests.get('https://www.palabrasaleatorias.com/mots-aleatoires.php?fs=3&fs2=0&Submit=Nouveau+mot')
-    open('temp.txt', 'wb').write(code.content)
-    import os
-    liste=[]
-    lines = []
-    with open('temp.txt') as f:
-        lines = f.readlines()
-        
-    liste=[simp(lines[112]),\
-           simp(lines[118]),\
-           simp(lines[124])\
-           ]
-    os.remove('temp.txt')
-    capturer_mots(liste,dresseur)
+  from random import randint
+  code = requests.get('https://www.palabrasaleatorias.com/mots-aleatoires.php?fs=3&fs2=0&Submit=Nouveau+mot')
+  #else: code = requests.get('https://www.textfixerfr.com/outils/generateur-de-mots-aleatoires.php') faut trouver un moyen de faire marcher ça
+  #else: code = requests.get('http://romainvaleri.online.fr/' ça aussi
+  lines=list(code.iter_lines())
+  liste=[simp(lines[112].decode("utf-8")),\
+         simp(lines[118].decode("utf-8")),\
+         simp(lines[124].decode("utf-8"))\
+         ]
+  return(capturer_mots(liste,dresseur))
 
 
 #________________________________________________________________________
@@ -77,7 +75,6 @@ def capturer_mots(mots,dresseur):
     
     if (sqliteConnection):
         sqliteConnection.close()
-    
     return(mots)
 
 #________________________________________________________________________

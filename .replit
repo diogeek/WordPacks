@@ -1,0 +1,3 @@
+run="python integration_discord.py"
+language="python3"
+onBoot="echo Booting up!"
