@@ -1,6 +1,21 @@
 import requests,sqlite3
-from bs4 import BeautifulSoup
+#from bs4 import BeautifulSoup
 import datetime
+
+cooldown_value=12
+taille_booster=3
+boosters_max=3
+
+#creation de la db si elle n'existe pas
+try:
+  sqliteConnection = sqlite3.connect('WordPacks.db')
+  cursor = sqliteConnection.cursor()
+  cursor.execute(f"CREATE TABLE IF NOT EXISTS dresseurs ('ID' INT UNIQUE, 'nom' TEXT, 'cooldown' TEXT, 'boosters_dispo' INT, PRIMARY KEY ('ID'));")
+  cursor.execute(f"CREATE TABLE IF NOT EXISTS mots ('nom' TEXT UNIQUE, 'dresseur' INT, 'rarete' INT, PRIMARY KEY ('nom'));")
+  sqliteConnection.commit()
+  sqliteConnection.close()
+except sqlite3.Error as error:
+  print(f"Error while connecting to sqlite : {error}")
 
 def simp(mot):
     mot=mot.replace("Ã©","é")
@@ -28,27 +43,37 @@ def creer_dresseur(dresseur):
         sqliteConnection = sqlite3.connect('WordPacks.db')
     except sqlite3.Error as error:
         return(f"Error while connecting to sqlite : {error}")
-    
-    sql_select_Query = (f"INSERT INTO dresseurs (nom,cooldown) VALUES ('{dresseur}',{datetime.datetime.now()-timedelta(hours=20)})")
+      
     cursor = sqliteConnection.cursor()
-    cursor.execute(sql_select_Query)
+    cursor.execute(f"INSERT INTO dresseurs (nom,cooldown,boosters_dispo) VALUES ('{dresseur}','{datetime.datetime.now()-datetime.timedelta(days=1)}',5)")
 
     sqliteConnection.commit()
     
     if (sqliteConnection):
         sqliteConnection.close()
 
-def ouverture_booster(dresseur):
-  from random import randint
-  code = requests.get('https://www.palabrasaleatorias.com/mots-aleatoires.php?fs=3&fs2=0&Submit=Nouveau+mot')
+def ouverture_booster(dresseur,nb=1):
+  try:
+      sqliteConnection = sqlite3.connect('WordPacks.db')
+  except sqlite3.Error as error:
+      return(f"Error while connecting to sqlite : {error}")
+  cursor = sqliteConnection.cursor()
+  cursor.execute(f"UPDATE dresseurs SET boosters_dispo=boosters_dispo-{nb} WHERE nom='{dresseur}'")
+  sqliteConnection.commit()
+  cursor.execute(f"SELECT boosters_dispo from dresseurs WHERE nom='{dresseur}'")
+  boosters_restants=cursor.fetchall()[0][0]
+  if (sqliteConnection):
+    sqliteConnection.close()
+  global taille_booster
+  code = requests.get(f'https://www.palabrasaleatorias.com/mots-aleatoires.php?fs={nb*taille_booster}&fs2=0&Submit=Nouveau+mot', timeout=(3.05,1))
   #else: code = requests.get('https://www.textfixerfr.com/outils/generateur-de-mots-aleatoires.php') faut trouver un moyen de faire marcher ça
   #else: code = requests.get('http://romainvaleri.online.fr/' ça aussi
   lines=list(code.iter_lines())
-  liste=[simp(lines[112].decode("utf-8")),\
-         simp(lines[118].decode("utf-8")),\
-         simp(lines[124].decode("utf-8"))\
-         ]
-  return(capturer_mots(liste,dresseur))
+  decalage=0
+  liste=[simp(lines[112+decalage+i*6].decode("utf-8")) if simp(lines[112+i*6].decode("utf-8"))!='<br /><div style="font-size:3em; color:#6200c5;">' else simp(lines[113+i*6].decode("utf-8")) for i in range(nb*taille_booster)]
+  if '<br /><div style="font-size:3em; color:#6200c5;">' in liste:
+    print(lines[110:126])
+  return(capturer_mots(liste,dresseur),boosters_restants)
 
 def cooldown_ready(dresseur):
     try:
@@ -57,10 +82,14 @@ def cooldown_ready(dresseur):
         return(f"Error while connecting to sqlite : {error}")
     cursor = sqliteConnection.cursor()
     cursor.execute(f"select cooldown from dresseurs WHERE nom='{dresseur}'")
-    cooldown = cursor.fetchall()[0][0]
-    if cooldown<datetime.datetime.now()-timedelta(hours=12):
-      return (True,cooldown<datetime.datetime.now()-timedelta(hours=20))
-    return (False,cooldown<datetime.datetime.now()-timedelta(hours=20))
+    cooldown = datetime.datetime.strptime(cursor.fetchall()[0][0], '%Y-%m-%d %H:%M:%S.%f')
+    if cooldown<datetime.datetime.now()-datetime.timedelta(hours=cooldown_value):
+      if sqliteConnection:
+        sqliteConnection.close()
+      return (True,None)
+    if sqliteConnection:
+      sqliteConnection.close()
+    return (False,str(cooldown-(datetime.datetime.now()-datetime.timedelta(hours=cooldown_value)))[:-7])
   
 #________________________________________________________________________
 
@@ -78,11 +107,11 @@ def capturer_mots(mots,dresseur):
     for mot_capture in mots:
         try:
             cursor = sqliteConnection.cursor()
-            cursor.execute(f"INSERT INTO mots (nom,dresseur) VALUES ('{mot_capture}','{id_dresseur}')")
+            cursor.execute(f"INSERT INTO mots (nom,dresseur,rarete) VALUES ('{mot_capture}','{id_dresseur}',1)")
         except sqlite3.IntegrityError:
             cursor = sqliteConnection.cursor()
+            cursor.execute(f"UPDATE mots SET rarete=rarete+1 WHERE dresseur='{id_dresseur}' AND nom='{mot_capture}' AND rarete<4")
             cursor.execute(f"UPDATE mots SET dresseur = '{id_dresseur}' WHERE nom= '{mot_capture}'")
-
     sqliteConnection.commit()
     
     if (sqliteConnection):
@@ -101,13 +130,8 @@ def afficher_mots(dresseur):
     cursor = sqliteConnection.cursor()
     cursor.execute(f"select * from dresseurs WHERE nom='{dresseur}'")
     record = cursor.fetchall()
-
-    id_dresseur,nom_dresseur=record[0]
-
-
-    cursor.execute(f"select * from mots WHERE mots.dresseur='{id_dresseur}'")
-    record = cursor.fetchall()
-
+    cursor.execute(f"select nom,rarete from mots WHERE mots.dresseur='{record[0][0]}'")
+    record = [f"{mot[0]} ({mot[1]})" for mot in cursor.fetchall()]
     if (sqliteConnection):
         sqliteConnection.close()
 
@@ -139,19 +163,7 @@ def echanger_mots(mot1,mot2,dresseur1,dresseur2):
         sqliteConnection = sqlite3.connect('WordPacks.db')
     except sqlite3.Error as error:
         return(f"Error while connecting to sqlite : {error}")
-    record1=0
-    record2=0
-    
-    record1=check_mot(mot1,dresseur1)
-    record2=check_mot(mot2,dresseur2)
-    """
-    if not record1 and not record2 :
-        return (f"@{dresseur1} n'a pas le mot '{mot1}' et @{dresseur2} n'a pas le mot '{mot2}'")
-    if not record1:
-        return (f"@{dresseur1} n'a pas le mot '{mot1}'")
-    if not record2:
-        return (f"@{dresseur2} n'a pas le mot '{mot2}'")
-    """
+  
     cursor = sqliteConnection.cursor()
     cursor.execute(f"update mots set dresseur='{dresseur1}' where nom='{mot2}'")
     cursor.execute(f"update mots set dresseur='{dresseur2}' where nom='{mot1}'")
@@ -171,7 +183,7 @@ def suppression_dresseur(dresseur):
     cursor.execute(f"select ID from dresseurs WHERE nom='{dresseur}'")
     record = cursor.fetchall()
     cursor.execute(f"DELETE from mots WHERE dresseur='{record[0][0]}'")
-    cursor.execute(f"DELETE from dresseurs WHERE ID={record[0][0]}")
+    cursor.execute(f"DELETE from dresseurs WHERE nom='{dresseur}'")
     sqliteConnection.commit()
     if (sqliteConnection):
         sqliteConnection.close()
@@ -200,3 +212,34 @@ def liste_dresseurs():
     cursor.execute(f"select nom from dresseurs")
     record = cursor.fetchall()
     return record
+
+#___________________________________________
+
+def boosters_dispo(dresseur,nb=1):
+    try:
+        sqliteConnection = sqlite3.connect('WordPacks.db')
+    except sqlite3.Error as error:
+        return(f"Error while connecting to sqlite : {error}")
+    cursor = sqliteConnection.cursor()
+    cursor.execute(f"select boosters_dispo from dresseurs WHERE nom={dresseur}")
+    record=cursor.fetchall()[0][0]
+    if nb-record<=0:
+      cursor.execute(f"UPDATE dresseurs SET cooldown='{datetime.datetime.now()}' WHERE nom='{dresseur}'")
+    sqliteConnection.commit()
+    if sqliteConnection:
+      sqliteConnection.close()
+    return (nb <= record)
+
+#__________________________________________
+
+def remplir_boosters(dresseur,nb=boosters_max):
+    try:
+        sqliteConnection = sqlite3.connect('WordPacks.db')
+    except sqlite3.Error as error:
+        return(f"Error while connecting to sqlite : {error}")
+    cursor = sqliteConnection.cursor()
+    cursor.execute(f"UPDATE dresseurs SET boosters_dispo={nb} WHERE nom={dresseur}")
+    sqliteConnection.commit()
+    if sqliteConnection:
+      sqliteConnection.close()
+    return
