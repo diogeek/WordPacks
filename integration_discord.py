@@ -35,8 +35,8 @@ async def on_message(message):
 `{prefix}help` - afficher cette page\n\n\
 <a:dresseur:958663675374370836> _Commandes relatives aux dresseurs_\n\n\
 `{prefix}kukujariv` - s'inscrire en tant que dresseur.\n\
-`{prefix}info` - afficher votre nombre de points et de boosters disponibles ainsi que votre position dans le classement.\n\
-`{prefix}classement` - afficher le classement des 10 dresseurs avec le plus de mots, ainsi que votre position.\n\
+`{prefix}info` - afficher diverses informations sur votre profil de dresseur.\n\
+`{prefix}classement` - afficher le classement des 10 meilleurs dresseurs, ainsi que votre position actuelle.\n\
 `{prefix}quitter` - supprimer votre profil de dresseur ainsi que tous vos mots, **définitivement**. Une confirmation vous sera demandée.\n\n\
 <a:mokeball:958666482894643200> _Commandes relatives aux mots_\n\n\
 `{prefix}mokedex` - afficher les mots que vous possédez, ainsi que leur rareté. Les mots sont triés par rareté.\n\
