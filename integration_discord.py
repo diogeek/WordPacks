@@ -1,6 +1,6 @@
 import discord
 from dotenv import load_dotenv
-from keep_alive import keep_alive
+from replit_keep_alive import keep_alive
 import os
 import main
 
