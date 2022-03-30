@@ -10,7 +10,7 @@ boosters_max=3
 try:
   sqliteConnection = sqlite3.connect('WordPacks.db')
   cursor = sqliteConnection.cursor()
-  cursor.execute(f"CREATE TABLE IF NOT EXISTS dresseurs ('ID' INT UNIQUE, 'nom' TEXT, 'cooldown' TEXT, 'boosters_dispo' INT, PRIMARY KEY ('ID'));")
+  cursor.execute(f"CREATE TABLE IF NOT EXISTS dresseurs ('ID' INT UNIQUE, 'nom' TEXT, 'cooldown' TEXT, 'boosters_dispo' INT, 'points' INT, PRIMARY KEY ('ID'));")
   cursor.execute(f"CREATE TABLE IF NOT EXISTS mots ('nom' TEXT UNIQUE, 'dresseur' INT, 'rarete' INT, PRIMARY KEY ('nom'));")
   sqliteConnection.commit()
   sqliteConnection.close()
@@ -45,7 +45,7 @@ def creer_dresseur(dresseur):
         return(f"Error while connecting to sqlite : {error}")
       
     cursor = sqliteConnection.cursor()
-    cursor.execute(f"INSERT INTO dresseurs (nom,cooldown,boosters_dispo) VALUES ('{dresseur}','{datetime.datetime.now()-datetime.timedelta(days=1)}',5)")
+    cursor.execute(f"INSERT INTO dresseurs (nom,cooldown,boosters_dispo,points) VALUES ('{dresseur}','{datetime.datetime.now()-datetime.timedelta(days=1)}',5,0)")
 
     sqliteConnection.commit()
     
@@ -130,7 +130,7 @@ def afficher_mots(dresseur):
     cursor = sqliteConnection.cursor()
     cursor.execute(f"select * from dresseurs WHERE nom='{dresseur}'")
     record = cursor.fetchall()
-    cursor.execute(f"select nom,rarete from mots WHERE mots.dresseur='{record[0][0]}'")
+    cursor.execute(f"select nom,rarete from mots WHERE mots.dresseur='{record[0][0]}'ORDER BY rarete DESC")
     record = [f"{mot[0]} ({mot[1]})" for mot in cursor.fetchall()]
     if (sqliteConnection):
         sqliteConnection.close()
@@ -228,7 +228,7 @@ def boosters_dispo(dresseur,nb=1):
     sqliteConnection.commit()
     if sqliteConnection:
       sqliteConnection.close()
-    return (nb <= record)
+    return (nb <= record,record)
 
 #__________________________________________
 
@@ -243,3 +243,41 @@ def remplir_boosters(dresseur,nb=boosters_max):
     if sqliteConnection:
       sqliteConnection.close()
     return
+
+#___________________________________________
+
+def upgrade(dresseur,nb=1):
+  dispo,nb_dispo=boosters_dispo(dresseur,nb)
+  if dispo:
+    try:
+        sqliteConnection = sqlite3.connect('WordPacks.db')
+    except sqlite3.Error as error:
+        return(f"Error while connecting to sqlite : {error}")
+    cursor = sqliteConnection.cursor()
+    cursor.execute(f"UPDATE dresseurs SET boosters_dispo=boosters_dispo-{nb} WHERE nom={dresseur}")
+    cursor.execute(f"SELECT nom FROM mots ORDER BY RANDOM() LIMIT {nb*2}")
+    randomwords="'"+("', '").join([i[0] for i in cursor.fetchall()])+"'"
+    cursor.execute(f"UPDATE mots SET rarete=rarete+1 WHERE nom IN ({randomwords})")
+    sqliteConnection.commit()
+    if sqliteConnection:
+      sqliteConnection.close()
+    return(f"Bravo <@{dresseur}> ! Vous avez sacrifié {nb} booster{'s' if nb!=1 else ''} et avez upgrade les mots suivants : {randomwords}. Il vous reste {nb_dispo-nb} boosters !")
+  else: return(f"Désolé <@{dresseur}>, vous n'avez que {nb_dispo} boosters !")
+
+#______________________________________________
+
+def info(dresseur,nom):
+  from random import choice
+  try:
+    sqliteConnection = sqlite3.connect('WordPacks.db')
+  except sqlite3.Error as error:
+    return(f"Error while connecting to sqlite : {error}")
+  cursor = sqliteConnection.cursor()
+  cursor.execute(f"SELECT nom,points,boosters_dispo FROM dresseurs where nom={dresseur}")
+  record=cursor.fetchall()[0]
+  print(record)
+  return(f"```DRESSEUR '{nom.upper()}'```\n\
+{choice([':person_bowing:',':person_doing_cartwheel:',':person_facepalming:',':person_raising_hand:',':person_running:',':person_tipping_hand:',':person_in_lotus_position:',':person_in_tuxedo:',':person_in_manual_wheelchair:',':person_in_motorized_wheelchair:',':person_in_steamy_room:',':person_playing_handball:',':person_pouting:',':person_shrugging:',':person_standing:',':person_frowning:',':person_gesturing_no:',':person_gesturing_ok:',':person_getting_massage:',':person_golfing:',':person_juggling:',':person_kneeling:',':person_lifting_weights:',':person_walking:',':person_with_probing_cane:',':person_bouncing_ball:'])} _Nom_ : `{nom}`\n\n\
+:slot_machine: _Score_ : `{record[1]}`\n\n\
+:red_envelope: _Boosters Disponibles_ : `{record[2]}`\n\n\
+||<@{record[0]}>||")

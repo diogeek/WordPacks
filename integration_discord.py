@@ -33,20 +33,23 @@ async def on_message(message):
     elif message.content==f"{prefix}help":
         await message.channel.send(f"**Commandes du bot Wordpacks**\n\n\
 `{prefix}help` - afficher cette page\n\n\
-_Commandes principales_\n\n\
+<a:dresseur:958663675374370836> _Commandes relatives aux dresseurs_\n\n\
 `{prefix}kukujariv` - s'inscrire en tant que dresseur.\n\
-`{prefix}mokedex` - afficher les mots que vous possédez, ainsi que leur rareté.\n\
+`{prefix}info` - afficher votre nombre de points et de boosters disponibles ainsi que votre position dans le classement.\n\
+`{prefix}classement` - afficher le classement des 10 dresseurs avec le plus de mots, ainsi que votre position.\n\
+`{prefix}quitter` - supprimer votre profil de dresseur ainsi que tous vos mots, **définitivement**. Une confirmation vous sera demandée.\n\n\
+<a:mokeball:958666482894643200> _Commandes relatives aux mots_\n\n\
+`{prefix}mokedex` - afficher les mots que vous possédez, ainsi que leur rareté. Les mots sont triés par rareté.\n\
 `{prefix}recherche [mot]` - vérifier si vous possédez un mot.\n\
 `{prefix}booster` - ouvrir un booster de 3 mots ! Vous obtenez 3 boosters toutes les 12 heures.\n\
-`{prefix}megabooster` - ouvrir 3 boosters de 3 mots, pour 9 mots **SANS DOUBLONS**!\n\
-`{prefix}upgrade` - sacrifier un booster, pour augmenter la rareté de 3 mots aléatoires de votre mokédex.\n\
-`{prefix}quitter` - supprimer votre profil de dresseur ainsi que tous vos mots, **définitivement**. Une confirmation vous sera demandée.\n\
-`{prefix}echange [dresseur]` - proposer un échange avec un dresseur\n\n\
-_Commandes relatives à l'échange_\n\n\
+`{prefix}megabooster` - ouvrir 3 boosters de 3 mots, pour 9 mots **SANS DOUBLONS** !\n\
+`{prefix}upgrade` - sacrifier un booster, pour augmenter la rareté de 2 mots aléatoires de votre mokédex.\n\
+`{prefix}echange [dresseur]` - proposer un échange avec un dresseur.\n\n\
+<:trade:958666805889601576> _Commandes relatives à l'échange_\n\n\
 `{prefix}accepter` - accepter la proposition d'échange\n\
-`{prefix}refuser` - refuser la proposition d'échange\n\
-`{prefix}annuler` - annuler l'échange\n\
-`{prefix}completer` - compléter l'échange")
+`{prefix}refuser` - refuser la proposition d'échange.\n\
+`{prefix}annuler` - annuler l'échange.\n\
+`{prefix}completer` - compléter l'échange.")
     if not main.check_dresseur_existe(message.author.id) and message.content==f"{prefix}kukujariv":
         main.creer_dresseur(str(message.author.id))
         await message.channel.send(f"Dresseur <@{message.author.id}> créé ! Voici **5** boosters pour commencer. Attrapez les tous !")
@@ -72,7 +75,7 @@ entrez le mot que vous souhaitez échanger et utilisez tous les deux la commande
             [await message.channel.send(f"`{(', '.join(x))}`") for x in record]
 
         elif message.content==f"{prefix}booster":
-          if main.boosters_dispo(message.author.id):
+          if main.boosters_dispo(message.author.id)[0]:
             record=main.ouverture_booster(message.author.id)
             await message.channel.send(f"Bravo <@{message.author.id}> ! tu obtiens les mots suivants : **{(', '.join(record[0]))}**. Il te reste {record[1]} boosters !")
           else :
@@ -91,14 +94,14 @@ entrez le mot que vous souhaitez échanger et utilisez tous les deux la commande
           else:
             await message.channel.send(f":no_entry_sign: Le dresseur <@{message.author.id}> **ne possède pas** le mot '{message.content.split(' ')[1]}'.")
           
-        #elif message.content==f"{prefix}jecheat":
+        elif message.content==f"{prefix}jecheat":
           main.remplir_boosters(message.author.id,999)
           #await message.channel.send("Joyeux Anniversaire :)), vous avez obtenu 999 boosters !")
         #elif message.content.startswith(f"{prefix}entrermot "):
           #main.capturer_mots([message.content.split(" ")[1]],message.author.id)
       
         elif message.content==f"{prefix}megabooster":
-          if main.boosters_dispo(message.author.id,3):
+          if main.boosters_dispo(message.author.id,3)[0]:
             record=(main.ouverture_booster(message.author.id,3))
             await message.channel.send(f"Bravo <@{message.author.id}> ! Tu obtiens les mots suivants : **{(', '.join(record[0]))}**. Il te reste {record[1]} boosters !")
           else :
@@ -143,6 +146,12 @@ entrez le mot que vous souhaitez échanger et utilisez tous les deux la commande
         elif message.content=="annuler" and message.author.id==suppression:
           suppression=""
           await message.channel.send("Suppression annulée. Ouf !")
+
+        elif message.content.startswith("!upgrade"):
+          try: await message.channel.send(main.upgrade(message.author.id,int(message.content.split(" ")[1])))
+          except: await message.channel.send(main.upgrade(message.author.id))
+        elif message.content=="!info":
+          await message.channel.send(main.info(message.author.id,message.author.name))
 
 keep_alive()
 iencli.run(os.getenv('TOKEN'))
