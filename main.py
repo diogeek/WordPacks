@@ -12,6 +12,7 @@ try:
   cursor = sqliteConnection.cursor()
   cursor.execute(f"CREATE TABLE IF NOT EXISTS dresseurs ('ID' INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, 'nom' TEXT, 'cooldown' TEXT, 'boosters_dispo' INT, 'points' INT);")
   cursor.execute(f"CREATE TABLE IF NOT EXISTS mots ('nom' TEXT PRIMARY KEY, 'dresseur' INT, 'rarete' INT);")
+  cursor.execute(f"CREATE TABLE IF NOT EXISTS echange ('nom' TEXT,'dresseur1' TEXT, 'dresseur2' TEXT, 'mot1' TEXT, 'mot2' TEXT, 'halfcomplete' INT, 'origine' TEXT)")
   sqliteConnection.commit()
   sqliteConnection.close()
 except sqlite3.Error as error:
@@ -71,8 +72,6 @@ def ouverture_booster(dresseur,nb=1):
   lines=list(code.iter_lines())
   decalage=0
   liste=[simp(lines[112+decalage+i*6].decode("utf-8")) if simp(lines[112+i*6].decode("utf-8"))!='<br /><div style="font-size:3em; color:#6200c5;">' else simp(lines[113+i*6].decode("utf-8")) for i in range(nb*taille_booster)]
-  if '<br /><div style="font-size:3em; color:#6200c5;">' in liste:
-    print(lines[110:126])
   return(capturer_mots(liste,dresseur),boosters_restants)
 
 def cooldown_ready(dresseur):
@@ -103,20 +102,25 @@ def capturer_mots(mots,dresseur):
     record = cursor.fetchall()
 
     id_dresseur=record[0][0]
-
+    mots_upgrade,mots_final=[],[]
     for mot_capture in mots:
         try:
             cursor = sqliteConnection.cursor()
             cursor.execute(f"INSERT INTO mots (nom,dresseur,rarete) VALUES ('{mot_capture}','{id_dresseur}',1)")
+            mots_final.append(mot_capture)
         except sqlite3.IntegrityError:
             cursor = sqliteConnection.cursor()
             cursor.execute(f"UPDATE mots SET rarete=rarete+1 WHERE dresseur='{id_dresseur}' AND nom='{mot_capture}' AND rarete<4")
-            cursor.execute(f"UPDATE mots SET dresseur = '{id_dresseur}' WHERE nom= '{mot_capture}'")
+            cursor.execute(f"SELECT nom FROM mots WHERE dresseur='{id_dresseur}' AND nom='{mot_capture}'")
+            try: mots_upgrade.append(cursor.fetchall()[0][0])
+            except IndexError :
+              cursor.execute(f"UPDATE mots SET dresseur = '{id_dresseur}' WHERE nom= '{mot_capture}'")
+              mots_final.append(mot_capture)
     sqliteConnection.commit()
     
     if (sqliteConnection):
         sqliteConnection.close()
-    return(mots)
+    return(mots_final,mots_upgrade)
 
 #________________________________________________________________________
 
@@ -158,19 +162,20 @@ def check_mot(mot,dresseur):
     else:
         return("")
 
-def echanger_mots(mot1,mot2,dresseur1,dresseur2):
+def echanger_mots(channel):
     try:
         sqliteConnection = sqlite3.connect('WordPacks.db')
     except sqlite3.Error as error:
         return(f"Error while connecting to sqlite : {error}")
-  
     cursor = sqliteConnection.cursor()
-    cursor.execute(f"update mots set dresseur='{dresseur1}' where nom='{mot2}'")
-    cursor.execute(f"update mots set dresseur='{dresseur2}' where nom='{mot1}'")
+    cursor.execute(f"SELECT dresseur1,dresseur2,mot1,mot2 FROM echange WHERE nom='{channel}'")
+    record=list(cursor.fetchall()[0])
+    cursor.execute(f"UPDATE mots SET dresseur='{(record[0]}' WHERE nom='{record[3]}'")
+    cursor.execute(f"UPDATE mots SET dresseur='{record[1]}' WHERE nom='{record[2]}'")
     sqliteConnection.commit()
     if (sqliteConnection):
         sqliteConnection.close()
-    return(f"Échange **complété** ! @{dresseur1} possède maintenant '{mot2}', et @{dresseur2} possède maitenant '{mot1}'")
+    return(f"Échange **complété** ! <@{record[0]}> possède maintenant '{record[3]}', et <@{record[1]}> possède maitenant '{record[2]}'")
 
 #______________________________________________
 
@@ -292,3 +297,104 @@ def info(dresseur,nom):
 :slot_machine: _Score_ : `{record[2]}`\n\n\
 :red_envelope: _Boosters Disponibles_ : `{record[3]}`\n\n\
 ||<@{record[1]}>||")
+
+def proposer_echange(dresseur1,dresseur2,origine):
+  try:
+    sqliteConnection = sqlite3.connect('WordPacks.db')
+  except sqlite3.Error as error:
+    return(f"Error while connecting to sqlite : {error}")
+  cursor = sqliteConnection.cursor()
+  cursor.execute(f"SELECT * FROM echange WHERE dresseur1='{dresseur1}' AND dresseur2='{dresseur2}'")
+  if not cursor.fetchall():
+    cursor.execute(f"INSERT INTO echange VALUES ('', '{dresseur1}', '{dresseur2}', '', '', 0, '{origine}')")
+  sqliteConnection.commit()
+  if sqliteConnection:
+    sqliteConnection.close()
+  return
+
+def creer_channel_echange(channel_echange,dresseur1,dresseur2):
+  try:
+    sqliteConnection = sqlite3.connect('WordPacks.db')
+  except sqlite3.Error as error:
+    return(f"Error while connecting to sqlite : {error}")
+  cursor = sqliteConnection.cursor()
+  cursor.execute(f"UPDATE echange SET nom='{channel_echange}' WHERE dresseur1='{dresseur1}' AND dresseur2='{dresseur2}'")
+  sqliteConnection.commit()
+  if sqliteConnection:
+    sqliteConnection.close()
+  return
+
+def changer_mot(channel,dresseur,mot):
+  try:
+    sqliteConnection = sqlite3.connect('WordPacks.db')
+  except sqlite3.Error as error:
+    return(f"Error while connecting to sqlite : {error}")
+  cursor = sqliteConnection.cursor()
+  cursor.execute(f"SELECT * FROM echange WHERE nom='{channel}'")
+  record=list(cursor.fetchall()[0])
+  cursor.execute(f"UPDATE echange SET mot{record.index(str(dresseur))}='{mot}' WHERE dresseur{record.index(str(dresseur))}='{dresseur}' AND nom='{channel}'")
+  sqliteConnection.commit()
+  if sqliteConnection:
+    sqliteConnection.close()
+  return
+
+def halfcomplete(channel):
+  try:
+    sqliteConnection = sqlite3.connect('WordPacks.db')
+  except sqlite3.Error as error:
+    return(f"Error while connecting to sqlite : {error}")
+  cursor = sqliteConnection.cursor()
+  cursor.execute(f"SELECT nom,halfcomplete FROM echange WHERE nom='{channel}'")
+  record=cursor.fetchall()[0]
+  if sqliteConnection:
+    sqliteConnection.close()
+  return bool(record)
+
+def confirmer_mot(channel):
+  try:
+    sqliteConnection = sqlite3.connect('WordPacks.db')
+  except sqlite3.Error as error:
+    return(f"Error while connecting to sqlite : {error}")
+  cursor = sqliteConnection.cursor()
+  cursor.execute(f"UPDATE echange SET halfcomplete=1 WHERE nom='{channel}'")
+  sqliteConnection.commit()
+  if sqliteConnection:
+    sqliteConnection.close()
+  return
+
+def dresseur1(dresseur):
+  try:
+    sqliteConnection = sqlite3.connect('WordPacks.db')
+  except sqlite3.Error as error:
+    return(f"Error while connecting to sqlite : {error}")
+  cursor = sqliteConnection.cursor()
+  cursor.execute(f"SELECT nom FROM echange WHERE dresseur1='{dresseur}'")
+  record=[i[0] for i in cursor.fetchall()]
+  if sqliteConnection:
+    sqliteConnection.close()
+  return record
+
+def dresseur2(dresseur):
+  try:
+    sqliteConnection = sqlite3.connect('WordPacks.db')
+  except sqlite3.Error as error:
+    return(f"Error while connecting to sqlite : {error}")
+  cursor = sqliteConnection.cursor()
+  cursor.execute(f"SELECT nom,dresseur1 FROM echange WHERE dresseur2='{dresseur}'")
+  record=cursor.fetchall()
+  if sqliteConnection:
+    sqliteConnection.close()
+  return record
+
+def origine(channel):
+  try:
+    sqliteConnection = sqlite3.connect('WordPacks.db')
+  except sqlite3.Error as error:
+    return(f"Error while connecting to sqlite : {error}")
+  cursor = sqliteConnection.cursor()
+  cursor.execute(f"SELECT origine FROM echange WHERE nom='{channel}'")
+  record=int(cursor.fetchall()[0][0])
+  if sqliteConnection:
+    sqliteConnection.close()
+  return record
+  
