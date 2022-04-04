@@ -45,7 +45,7 @@ async def on_message(message):
 `{main.get_prefix(message.guild.id)}accepter` - accepter la proposition d'échange et créer un channel temporaire.\n\
 `{main.get_prefix(message.guild.id)}refuser` - refuser la proposition d'échange.\n\
 `{main.get_prefix(message.guild.id)}annuler` - annuler l'échange / la proposition d'échange et supprimer le potentiel channel temporaire.\n\
-`{main.get_prefix(message.guild.id)}` - compléter l'échange.")
+`{main.get_prefix(message.guild.id)}`confirmer - compléter l'échange.")
     if message.content.startswith("!wordpacksprefix ") or message.content.startswith(f"{main.get_prefix(message.guild.id)}wordpacksprefix "):
       if message.mentions:
         await message.channel.send("Veuillez entrer un prefix valide.")
@@ -81,10 +81,10 @@ async def on_message(message):
               message.channel.delete()
 
         elif message.content == f"{main.get_prefix(message.guild.id)}mokedex":
-            record = main.afficher_mots(str(message.author.id))
+            record,count = main.afficher_mots(str(message.author.id))
             record = [record[i:i + 50] for i in range(0, len(record), 50)]
             await message.channel.send(
-                f"Le dresseur <@{message.author.id}> possède les mots suivants :"
+                f"Le dresseur <@{message.author.id}> possède **{count}** mots :"
             )
             [await message.channel.send(f"`{(', '.join(x))}`") for x in record]
 
@@ -131,10 +131,10 @@ async def on_message(message):
                     )
 
         elif message.content.startswith(f"{main.get_prefix(message.guild.id)}recherche "):
-            if main.check_mot(
-                    message.content.split(" ")[1], message.author.id):
+            mot=main.check_mot(message.content.split(" ")[1], message.author.id)
+            if mot:
                 await message.channel.send(
-                    f":white_check_mark: Le dresseur <@{message.author.id}> **possède** le mot '{message.content.split(' ')[1]}'."
+                    f":white_check_mark: Le dresseur <@{message.author.id}> **possède** le mot **{mot[0]}**. Sa rareté est de niveau **{mot[1]}**."
                 )
             else:
                 await message.channel.send(
@@ -204,10 +204,13 @@ async def on_message(message):
 
         elif message.content == f"{main.get_prefix(message.guild.id)}classement":
           stats,classement=main.classement(message.author.id)
-          await message.channel.send(f"\
-<a:mokeball:958666482894643200>`CLASSEMENT DES DRESSEURS`<a:mokeball:958666482894643200>\n\n\
-{'\n'.join([f'{numbers[i]} <@{classement[i][1]}> : {classement[i][2]}pts - {classement[i][3]} mots' for i in range(len(classement))])}\n\n`{stats[3]}` <@{stats[0]}> (Vous) : {stats[1]}pts - {stats][2]} mots")
+          #await message.channel.send(f"<a:mokeball:958666482894643200>`CLASSEMENT DES DRESSEURS`<a:mokeball:958666482894643200>\n\n{'\n'.join([f'{numbers[i]} <@{classement[i][1]}> : {classement[i][2]}pts - {classement[i][3]} mots' for i in range(len(classement))])}\n\n`{stats[3]}` <@{stats[0]}> (Vous) : {stats[1]}pts - {stats][2]} mots")
           
 
 keep_alive()
-iencli.run(os.getenv('TOKEN'))
+try:
+  iencli.run(os.getenv('TOKEN'))
+except discord.errors.HTTPException:
+    print("\n\n\nBLOCKED BY RATE LIMITS\nRESTARTING NOW\n\n\n")
+    os.system("python restarter.py")
+    os.system('kill 1')

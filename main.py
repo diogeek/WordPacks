@@ -82,7 +82,7 @@ def capturer_mots(mots,dresseur):
             cursor.execute(f"SELECT nom FROM mots WHERE dresseur='{id_dresseur}' AND nom='{mot_capture}'")
             try: mots_upgrade.append(cursor.fetchall()[0][0])
             except IndexError :
-              cursor.execute(f"UPDATE mots SET dresseur = '{id_dresseur}' WHERE nom= '{mot_capture}'")
+              cursor.execute(f"UPDATE mots SET dresseur = '{id_dresseur}' WHERE nom='{mot_capture}'")
               mots_final.append(mot_capture)
     sqliteConnection.commit()
     return(mots_final,mots_upgrade)
@@ -95,16 +95,15 @@ def afficher_mots(dresseur):
     record = cursor.fetchall()
     cursor.execute(f"select nom,rarete from mots WHERE mots.dresseur='{record[0][0]}'ORDER BY rarete DESC")
     record = [f"{mot[0]} ({mot[1]})" for mot in cursor.fetchall()]
-    return(record)
+    return(record,len(record))
 
 #_________________________________________________________________________
 
 def check_mot(mot,dresseur):
     cursor.execute(f"select ID from dresseurs WHERE nom='{dresseur}'")
     record = cursor.fetchall()
-    cursor.execute(f"select nom from mots WHERE nom='{mot}' and dresseur='{record[0][0]}'")
-    record = cursor.fetchall()
-    try:return(record[0][0])
+    cursor.execute(f"select nom,rarete from mots WHERE nom='{mot}' and dresseur='{record[0][0]}'")
+    try:return(list(cursor.fetchall()[0]))
     except IndexError: return("")
 
 def echanger_mots(channel):
