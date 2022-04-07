@@ -39,10 +39,14 @@ def simp(mot):
     mot=mot.lower()
     return mot
 
+#________________________________________________________________________
+
 def creer_dresseur(dresseur):
     cursor.execute(f"INSERT INTO dresseurs (nom,cooldown,boosters_dispo,points) VALUES ('{dresseur}','{datetime.datetime.now()-datetime.timedelta(days=1)}',5,0)")
     sqliteConnection.commit()
     return
+
+#________________________________________________________________________
 
 def ouverture_booster(dresseur,nb=1):
   cursor.execute(f"UPDATE dresseurs SET boosters_dispo=boosters_dispo-{nb} WHERE nom='{dresseur}'")
@@ -57,6 +61,8 @@ def ouverture_booster(dresseur,nb=1):
   decalage=0
   liste=[simp(lines[112+decalage+i*6].decode("utf-8")) if simp(lines[112+i*6].decode("utf-8"))!='<br /><div style="font-size:3em; color:#6200c5;">' else simp(lines[113+i*6].decode("utf-8")) for i in range(nb*taille_booster)]
   return(capturer_mots(liste,dresseur),boosters_restants)
+
+#________________________________________________________________________
 
 def cooldown_ready(dresseur):
     cursor.execute(f"select cooldown from dresseurs WHERE nom='{dresseur}'")
@@ -105,6 +111,8 @@ def check_mot(mot,dresseur):
     cursor.execute(f"select nom,rarete from mots WHERE nom='{mot}' and dresseur='{record[0][0]}'")
     try:return(list(cursor.fetchall()[0]))
     except IndexError: return("")
+
+#_________________________________________________________________________
 
 def echanger_mots(channel):
     cursor.execute(f"SELECT dresseur1,dresseur2,mot1,mot2 FROM echange WHERE nom='{channel}'")
@@ -172,7 +180,7 @@ def upgrade(dresseur,nb=1):
     else: return(f"Désolé <@{dresseur}>, vous n'avez que {nb_dispo} boosters !")
   else: return(f"Désolé <@{dresseur}>, vous n'avez pas assez de mots !")
 
-#______________________________________________
+#___________________________________________
 
 def info(dresseur,nom):
   from random import choice
@@ -188,6 +196,8 @@ def info(dresseur,nom):
 :red_envelope: _Boosters Disponibles_ : `{record[3]}`\n\n\
 ||<@{record[1]}>||")
 
+#___________________________________________
+
 def proposer_echange(dresseur1,dresseur2,origine):
   cursor.execute(f"SELECT * FROM echange WHERE dresseur1='{dresseur1}' AND dresseur2='{dresseur2}'")
   if not cursor.fetchall():
@@ -195,10 +205,14 @@ def proposer_echange(dresseur1,dresseur2,origine):
   sqliteConnection.commit()
   return
 
+#___________________________________________
+
 def creer_channel_echange(channel_echange,dresseur1,dresseur2):
   cursor.execute(f"UPDATE echange SET nom='{channel_echange}' WHERE dresseur1='{dresseur1}' AND dresseur2='{dresseur2}'")
   sqliteConnection.commit()
   return
+
+#___________________________________________
 
 def changer_mot(channel,dresseur,mot):
   cursor.execute(f"SELECT * FROM echange WHERE nom='{channel}'")
@@ -207,40 +221,58 @@ def changer_mot(channel,dresseur,mot):
   sqliteConnection.commit()
   return
 
+#___________________________________________
+
 def halfcomplete(channel):
   cursor.execute(f"SELECT nom,halfcomplete FROM echange WHERE nom='{channel}'")
   return bool(cursor.fetchall()[0])
+
+#___________________________________________
 
 def confirmer_mot(channel):
   cursor.execute(f"UPDATE echange SET halfcomplete=1 WHERE nom='{channel}'")
   sqliteConnection.commit()
   return
 
+#___________________________________________
+
 def dresseur1(dresseur):
   cursor.execute(f"SELECT nom FROM echange WHERE dresseur1='{dresseur}'")
   return [i[0] for i in cursor.fetchall()]
+
+#___________________________________________
 
 def dresseur2(dresseur):
   cursor.execute(f"SELECT nom,dresseur1 FROM echange WHERE dresseur2='{dresseur}'")
   return cursor.fetchall()
 
+#___________________________________________
+
 def origine(channel):
   cursor.execute(f"SELECT origine FROM echange WHERE nom='{channel}'")
   return int(cursor.fetchall()[0][0])
+
+#___________________________________________
 
 def changer_prefix(serveur,prefix):
   cursor.execute(f"UPDATE prefixes SET prefix='{prefix}' WHERE serveur='{serveur}'")
   sqliteConnection.commit()
   return (f"Le prefix des commandes est maintenant `{prefix}` sur ce serveur !")
 
+#___________________________________________
+
 def get_prefix(serveur):
   cursor.execute(f"SELECT prefix FROM prefixes WHERE serveur='{serveur}'")
   return cursor.fetchall()[0][0]
+
+#___________________________________________
 
 def ajouter_serveur(serveur):
   cursor.execute(f"INSERT OR IGNORE INTO prefixes('serveur','prefix') VALUES ('{serveur}','!')")
   sqliteConnection.commit()
   return
+
+#___________________________________________
 
 def classement(dresseur):
   cursor.execute("SELECT ID,nom,points FROM dresseurs ORDER BY points DESC LIMIT 10")
@@ -258,6 +290,8 @@ def classement(dresseur):
   stats.append(cursor.fetchall()[0][0])
   print(stats,record)
   return stats,record
+
+#___________________________________________
 
 def close_db():
   sqliteConnection.close()
