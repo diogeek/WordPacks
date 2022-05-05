@@ -34,6 +34,7 @@ def simp(mot):
     mot=mot.replace("Ã¼","ü")
     mot=mot.replace("Ã´","ô")
     mot=mot.replace("Ã¶","ö")
+    mot=mot.replace("œ","oe")
     mot=mot.replace("</div>","")
     mot=mot.replace("\n","")
     mot=mot.lower()
@@ -107,12 +108,18 @@ def check_mot(mot,dresseur):
     except IndexError: return("")
 
 def echanger_mots(channel):
-    cursor.execute(f"SELECT dresseur1,dresseur2,mot1,mot2 FROM echange WHERE nom='{channel}'")
+    cursor.execute(f"SELECT dresseur1,dresseur2 FROM echange WHERE nom='{channel}'")
     record=list(cursor.fetchall()[0])
-    cursor.execute(f"UPDATE mots SET dresseur='{record[0]}' WHERE nom='{record[3]}'")
-    cursor.execute(f"UPDATE mots SET dresseur='{record[1]}' WHERE nom='{record[2]}'")
+    final=list(record)
+    for i in record:
+      cursor.execute(f"SELECT ID FROM dresseurs WHERE nom='{i}'")
+      final.append(cursor.fetchall()[0][0])
+    cursor.execute(f"SELECT mot1,mot2 FROM echange WHERE nom='{channel}'")
+    final=final[2:]+list(cursor.fetchall()[0])
+    cursor.execute(f"UPDATE mots SET dresseur='{final[0]}' WHERE nom='{final[3]}'")
+    cursor.execute(f"UPDATE mots SET dresseur='{final[1]}' WHERE nom='{final[2]}'")
     sqliteConnection.commit()
-    return(f"Échange **complété** ! <@{record[0]}> possède maintenant '{record[3]}', et <@{record[1]}> possède maitenant '{record[2]}'")
+    return(f"Échange **complété** ! <@{record[0]}> possède maintenant '{final[3]}', et <@{record[1]}> possède maitenant '{final[2]}'")
 
 #______________________________________________
 
