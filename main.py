@@ -197,10 +197,11 @@ def info(dresseur,nom):
   record.extend(list(cursor.fetchall()[0]))
   return(f"```DRESSEUR '{nom.upper()}'```\n\
 {choice([':person_bowing:',':person_doing_cartwheel:',':person_facepalming:',':person_raising_hand:',':person_running:',':person_tipping_hand:',':person_in_lotus_position:',':person_in_tuxedo:',':person_in_manual_wheelchair:',':person_in_motorized_wheelchair:',':person_in_steamy_room:',':person_playing_handball:',':person_pouting:',':person_shrugging:',':person_standing:',':person_frowning:',':person_gesturing_no:',':person_gesturing_ok:',':person_getting_massage:',':person_golfing:',':person_juggling:',':person_kneeling:',':person_lifting_weights:',':person_walking:',':person_with_probing_cane:',':person_bouncing_ball:'])} _Nom_ : `{nom}`\n\n\
-:capital_abcd: _Mots Possédés_ : `{record[4]}`\n\n\
-:star: _Rareté La Plus Haute Possédée_ : `{record[5] if record[5] else 'Aucune'}`\n\n\
+:capital_abcd: _Mots possédés_ : `{record[4]}`\n\n\
+:star: _Rareté la plus haute possédée_ : `{record[5] if record[5] else 'Aucune'}`\n\n\
 :slot_machine: _Score_ : `{record[2]}`\n\n\
-:red_envelope: _Boosters Disponibles_ : `{record[3]}`\n\n\
+:trophy: _Position dans le Classement_ : `{pos_classement(dresseur)}`\n\n\
+:red_envelope: _Boosters disponibles_ : `{record[3]}`\n\n\
 ||<@{record[1]}>||")
 
 #___________________________________________
@@ -231,8 +232,8 @@ def changer_mot(channel,dresseur,mot):
 #___________________________________________
 
 def halfcomplete(channel):
-  cursor.execute(f"SELECT nom,halfcomplete FROM echange WHERE nom='{channel}'")
-  return bool(cursor.fetchall()[0])
+  cursor.execute(f"SELECT halfcomplete FROM echange WHERE nom='{channel}'")
+  return bool(cursor.fetchall()[0][0])
 
 #___________________________________________
 
@@ -281,6 +282,10 @@ def ajouter_serveur(serveur):
 
 #___________________________________________
 
+def pos_classement(dresseur):
+  cursor.execute(f"SELECT COUNT(*) + 1 RowNum FROM dresseurs WHERE points > (SELECT points FROM dresseurs WHERE nom='{dresseur}');")
+  return(cursor.fetchall()[0][0])
+
 def classement(dresseur):
   cursor.execute("SELECT ID,nom,points FROM dresseurs ORDER BY points DESC LIMIT 10")
   record=[list(i) for i in cursor.fetchall()]
@@ -289,16 +294,19 @@ def classement(dresseur):
     cursor.execute(f"SELECT COUNT(*) FROM mots WHERE dresseur='{dresseurs}'")
     record[r].append(cursor.fetchall()[0][0])
     r+=1
+  #stats = nom,points,nombre de mots, position dans le classement
   cursor.execute(f"SELECT nom,points FROM dresseurs WHERE nom='{dresseur}'")
   stats=list(cursor.fetchall()[0])
   cursor.execute(f"SELECT COUNT(*) FROM mots WHERE dresseur='{dresseur}'")
   stats.append(cursor.fetchall()[0][0])
-  cursor.execute(f"SELECT COUNT(*) FROM dresseurs WHERE points <= (SELECT points FROM dresseurs WHERE nom='{dresseur}')")
-  stats.append(cursor.fetchall()[0][0])
-  print(stats,record)
+  stats.append(pos_classement(dresseur))
   return stats,record
 
 #___________________________________________
+
+def cheatpoints(dresseur):
+  cursor.execute(f"UPDATE dresseurs SET points=points+50 WHERE nom='{dresseur}'")
+  return("ggwp")
 
 def close_db():
   sqliteConnection.close()

@@ -10,7 +10,7 @@ iencli = discord.Client()
 
 channels_echanges=[]
 suppression = []
-numbers=[":zero:",":one:",":two:",":three:",":four:",":five:",":six:",":seven:",":eight:",":nine:",":keycap_ten:"]
+numbers=[":one:",":two:",":three:",":four:",":five:",":six:",":seven:",":eight:",":nine:",":keycap_ten:"]
 
 @iencli.event
 async def on_ready():
@@ -80,11 +80,19 @@ async def on_message(message):
               channels_echanges.pop(channels_echanges.index(message.channel.id))
               message.channel.delete()
 
-        elif message.content == f"{main.get_prefix(message.guild.id)}mokedex":
+        elif message.content.startswith(f"{main.get_prefix(message.guild.id)}mokedex"):
+          if not message.mentions:
             record,count = main.afficher_mots(str(message.author.id))
             record = [record[i:i + 50] for i in range(0, len(record), 50)]
             await message.channel.send(
                 f"Le dresseur <@{message.author.id}> possède **{count}** mots :"
+            )
+            [await message.channel.send(f"`{(', '.join(x))}`") for x in record]
+          elif main.check_dresseur_existe(message.mentions[0].id):
+            record,count = main.afficher_mots(str(message.mentions[0].id))
+            record = [record[i:i + 50] for i in range(0, len(record), 50)]
+            await message.channel.send(
+                f"Le dresseur <@{message.mentions[0].id}> possède **{count}** mots :"
             )
             [await message.channel.send(f"`{(', '.join(x))}`") for x in record]
 
@@ -206,7 +214,10 @@ async def on_message(message):
 
         elif message.content == f"{main.get_prefix(message.guild.id)}classement":
           stats,classement=main.classement(message.author.id)
-          #await message.channel.send(f"<a:mokeball:958666482894643200>`CLASSEMENT DES DRESSEURS`<a:mokeball:958666482894643200>\n\n{'\n'.join([f'{numbers[i]} <@{classement[i][1]}> : {classement[i][2]}pts - {classement[i][3]} mots' for i in range(len(classement))])}\n\n`{stats[3]}` <@{stats[0]}> (Vous) : {stats[1]}pts - {stats][2]} mots")
+          newline='\n'
+          await message.channel.send(f"<a:mokeball:958666482894643200>`CLASSEMENT DES DRESSEURS`<a:mokeball:958666482894643200>{newline*2}{newline.join([f'{numbers[i]} <@{classement[i][1]}> : {classement[i][2]}pts - {classement[i][3]} mots' for i in range(len(classement))])}{newline*2}`{stats[3]}` <@{message.author.id}> (Vous) : {stats[1]}pts - {stats[2]} mots")
+        elif message.content == (f"{main.get_prefix(message.guild.id)}hauthautbasbasgauchedroitegauchedroiteBAstart"):
+          await message.channel.send(main.cheatpoints(message.author.id))
           
 
 keep_alive()
