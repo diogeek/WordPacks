@@ -19,8 +19,13 @@ def index() -> str:
 def keep_alive() -> None:
     """ Wraps the web server run() method in a Thread object and starts the web server. """
     def run() -> None:
+        # development server :
+        """
         log.setLevel(logging.ERROR)
-        flask.run(host = '0.0.0.0', port = 8080)
+        flask.run(host = '0.0.0.0', port = 8080)"""
+        # production server :
+        from waitress import serve
+        serve(flask, host="0.0.0.0", port=8080)
     thread = Thread(target = run)
     thread.start()
 
