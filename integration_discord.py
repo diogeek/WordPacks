@@ -35,7 +35,7 @@ async def on_message(message):
 `{main.get_prefix(message.guild.id)}classement` - afficher le classement des 10 meilleurs dresseurs, ainsi que votre position actuelle.\n\
 `{main.get_prefix(message.guild.id)}quitter` - supprimer votre profil de dresseur ainsi que tous vos mots, **définitivement**. Une confirmation vous sera demandée.\n\n\
 <a:mokeball:958666482894643200> _Commandes relatives aux mots_\n\n\
-`{main.get_prefix(message.guild.id)}mokedex` - afficher les mots que vous possédez, ainsi que leur rareté. Les mots sont triés par rareté.\n\
+`{main.get_prefix(message.guild.id)}mokedex <dresseur>` - afficher les mots que vous possédez, ainsi que leur rareté. Les mots sont triés par rareté. Il est possible d'afficher le mokédex d'un autre dresseur en le mentionnant.\n\
 `{main.get_prefix(message.guild.id)}recherche [mot]` - vérifier si vous possédez un mot.\n\
 `{main.get_prefix(message.guild.id)}booster` - ouvrir un booster de 3 mots ! Vous obtenez 3 boosters toutes les 12 heures.\n\
 `{main.get_prefix(message.guild.id)}megabooster` - ouvrir 3 boosters de 3 mots, pour 9 mots **SANS DOUBLONS** !\n\
