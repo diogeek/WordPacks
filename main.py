@@ -37,6 +37,8 @@ def simp(mot):
     mot=mot.replace("œ","oe")
     mot=mot.replace("</div>","")
     mot=mot.replace("\n","")
+    whitelist = set('abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZéèêëùîïäâàçûüôö-')
+    mot = ''.join(filter(whitelist.__contains__, mot))
     mot=mot.lower()
     return mot
 
@@ -60,7 +62,7 @@ def ouverture_booster(dresseur,nb=1):
   #else: code = requests.get('http://romainvaleri.online.fr/' ça aussi
   lines=list(code.iter_lines())
   decalage=0
-  liste=[simp(lines[112+decalage+i*6].decode("utf-8")) if simp(lines[112+i*6].decode("utf-8"))!='<br /><div style="font-size:3em; color:#6200c5;">' else simp(lines[113+i*6].decode("utf-8")) for i in range(nb*taille_booster)]
+  liste=[simp(lines[112+decalage+i*6].decode("utf-8")) if simp(lines[112+i*6].decode("utf-8"))!='br div stylefont-sizeem colorc' else simp(lines[113+i*6].decode("utf-8")) for i in range(nb*taille_booster)]
   return(capturer_mots(liste,dresseur),boosters_restants)
 
 #________________________________________________________________________
@@ -82,7 +84,7 @@ def capturer_mots(mots,dresseur):
     mots_upgrade,mots_final=[],[]
     for mot_capture in mots:
         try:
-            cursor.execute(f"INSERT INTO mots (nom,dresseur,rarete) VALUES ('{mot_capture}','{id_dresseur}',1)")
+            cursor.execute(f"INSERT INTO mots (nom,dresseur,rarete) VALUES ('{mot_capture.split(' ',1)[0]}','{id_dresseur}',1)")
             mots_final.append(mot_capture)
         except sqlite3.IntegrityError:
             cursor.execute(f"UPDATE mots SET rarete=rarete+1 WHERE dresseur='{id_dresseur}' AND nom='{mot_capture}' AND rarete<4")
@@ -126,6 +128,7 @@ def echanger_mots(channel):
     final=final[2:]+list(cursor.fetchall()[0])
     cursor.execute(f"UPDATE mots SET dresseur='{final[0]}' WHERE nom='{final[3]}'")
     cursor.execute(f"UPDATE mots SET dresseur='{final[1]}' WHERE nom='{final[2]}'")
+    cursor.execute(f"DELETE FROM echange WHERE nom='{channel}'")
     sqliteConnection.commit()
     return(f"Échange **complété** ! <@{record[0]}> possède maintenant '{final[3]}', et <@{record[1]}> possède maitenant '{final[2]}'")
 
@@ -189,7 +192,7 @@ def upgrade(dresseur,nb=1):
 
 #___________________________________________
 
-def info(dresseur,nom):
+def info(dresseur,nom,auteur=None):
   from random import choice
   cursor.execute(f"SELECT ID,nom,points,boosters_dispo FROM dresseurs WHERE nom='{dresseur}'")
   record=list(cursor.fetchall()[0])
@@ -202,7 +205,7 @@ def info(dresseur,nom):
 :slot_machine: _Score_ : `{record[2]}`\n\n\
 :trophy: _Position dans le Classement_ : `{pos_classement(dresseur)}`\n\n\
 :red_envelope: _Boosters disponibles_ : `{record[3]}`\n\n\
-||<@{record[1]}>||")
+||<@{auteur if auteur is not None else dresseur}>||")
 
 #___________________________________________
 
@@ -233,7 +236,7 @@ def changer_mot(channel,dresseur,mot):
 
 def halfcomplete(channel):
   cursor.execute(f"SELECT halfcomplete FROM echange WHERE nom='{channel}'")
-  return bool(cursor.fetchall()[0][0])
+  return [False,True][cursor.fetchall()[0][0]]
 
 #___________________________________________
 
@@ -297,7 +300,7 @@ def classement(dresseur):
   #stats = nom,points,nombre de mots, position dans le classement
   cursor.execute(f"SELECT nom,points FROM dresseurs WHERE nom='{dresseur}'")
   stats=list(cursor.fetchall()[0])
-  cursor.execute(f"SELECT COUNT(*) FROM mots WHERE dresseur='{dresseur}'")
+  cursor.execute(f"SELECT COUNT(*) FROM mots WHERE dresseur=(SELECT id FROM dresseurs WHERE nom='{dresseur}')")
   stats.append(cursor.fetchall()[0][0])
   stats.append(pos_classement(dresseur))
   return stats,record
@@ -306,7 +309,15 @@ def classement(dresseur):
 
 def cheatpoints(dresseur):
   cursor.execute(f"UPDATE dresseurs SET points=points+50 WHERE nom='{dresseur}'")
+  sqliteConnection.commit()
   return("ggwp")
 
-def close_db():
+#___________________________________________
+
+def ajouterscore(auteur, phrase):
+  for mot in simp(phrase).split(" "):
+    cursor.execute(f"UPDATE dresseurs SET points=points+(SELECT rarete FROM mots WHERE nom='{mot}') WHERE id=(SELECT dresseur FROM mots WHERE nom='{mot}') AND nom!='{auteur}'")
+  sqliteConnection.commit()
+
+def close_db(): #en cas de problème
   sqliteConnection.close()

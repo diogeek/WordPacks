@@ -31,7 +31,7 @@ async def on_message(message):
 `{main.get_prefix(message.guild.id)}wordpacksprefix` [prefix] - changer le prefix des commandes du bot WordPacks (`!` par défaut). Cette commande fonctionnera toujours avec `!wordpacksprefix` afin de pouvoir corriger d'éventuels changements accidentels.\n\n\
 <a:dresseur:958663675374370836> _Commandes relatives aux dresseurs_\n\n\
 `{main.get_prefix(message.guild.id)}kukujariv` - s'inscrire en tant que dresseur.\n\
-`{main.get_prefix(message.guild.id)}info` - afficher diverses informations sur votre profil de dresseur.\n\
+`{main.get_prefix(message.guild.id)}info <dresseur>` - afficher diverses informations sur votre profil de dresseur. Il est possible d'afficher la carte d'infos d'un autre dresseur en le mentionnant.\n\
 `{main.get_prefix(message.guild.id)}classement` - afficher le classement des 10 meilleurs dresseurs, ainsi que votre position actuelle.\n\
 `{main.get_prefix(message.guild.id)}quitter` - supprimer votre profil de dresseur ainsi que tous vos mots, **définitivement**. Une confirmation vous sera demandée.\n\n\
 <a:mokeball:958666482894643200> _Commandes relatives aux mots_\n\n\
@@ -95,6 +95,8 @@ async def on_message(message):
                 f"Le dresseur <@{message.mentions[0].id}> possède **{count}** mots :"
             )
             [await message.channel.send(f"`{(', '.join(x))}`") for x in record]
+          else :
+            await message.channel.send(f"Dresseur `{message.mentions[0].name}` introuvable.")
 
         elif message.content == f"{main.get_prefix(message.guild.id)}booster":
             if main.boosters_dispo(message.author.id)[0]:
@@ -179,7 +181,6 @@ async def on_message(message):
             if main.halfcomplete(message.channel.id):
                 channel=await iencli.fetch_channel(main.origine(message.channel.id))
                 await channel.send(main.echanger_mots(message.channel.id))
-                #main.echanger_mots(message.channel.id)
                 channels_echanges.pop(channels_echanges.index(message.channel.id))
                 await message.channel.delete()
             else:
@@ -209,8 +210,13 @@ async def on_message(message):
                 await message.channel.send(main.upgrade(message.author.id,int(message.content.split(" ")[1])))
             except:
                 await message.channel.send(main.upgrade(message.author.id))
-        elif message.content == f"{main.get_prefix(message.guild.id)}info":
-            await message.channel.send(main.info(message.author.id, message.author.name))
+        elif message.content.startswith(f"{main.get_prefix(message.guild.id)}info"):
+            if not message.mentions:
+              await message.channel.send(main.info(message.author.id, message.author.name))
+            elif main.check_dresseur_existe(message.mentions[0].id):
+              await message.channel.send(main.info(message.mentions[0].id, message.mentions[0].name,message.author.id))
+            else :
+              await message.channel.send(f"Dresseur `{message.mentions[0].name}` introuvable.")
 
         elif message.content == f"{main.get_prefix(message.guild.id)}classement":
           stats,classement=main.classement(message.author.id)
@@ -218,7 +224,9 @@ async def on_message(message):
           await message.channel.send(f"<a:mokeball:958666482894643200>`CLASSEMENT DES DRESSEURS`<a:mokeball:958666482894643200>{newline*2}{newline.join([f'{numbers[i]} <@{classement[i][1]}> : {classement[i][2]}pts - {classement[i][3]} mots' for i in range(len(classement))])}{newline*2}`{stats[3]}` <@{message.author.id}> (Vous) : {stats[1]}pts - {stats[2]} mots")
         elif message.content == (f"{main.get_prefix(message.guild.id)}hauthautbasbasgauchedroitegauchedroiteBAstart"):
           await message.channel.send(main.cheatpoints(message.author.id))
-          
+
+    if message.content:
+      main.ajouterscore(message.author.id, message.content)
 
 keep_alive()
 try:
