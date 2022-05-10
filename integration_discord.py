@@ -64,7 +64,7 @@ async def on_message(message):
         all_echanges=main.dresseur2(message.author.id)
         if all_echanges and message.content == f"{main.get_prefix(message.guild.id)}accepter":
           for echange in all_echanges:
-            channel_echange=await message.guild.create_text_channel('echange-temp', overwrites={message.guild.default_role: discord.PermissionOverwrite(read_messages=False),message.author: discord.PermissionOverwrite(read_messages=True),await iencli.fetch_user(int(echange[1])): discord.PermissionOverwrite(read_messages=True),iencli.user: discord.PermissionOverwrite(read_messages=True)})
+            channel_echange=await message.guild.create_text_channel('echange-temp', overwrites={message.guild.default_role: discord.PermissionOverwrite(read_messages=False),message.author: discord.PermissionOverwrite(read_messages=True),await iencli.fetch_user(int(echange[2])): discord.PermissionOverwrite(read_messages=True),iencli.user: discord.PermissionOverwrite(read_messages=True)})
             main.creer_channel_echange(channel_echange.id,echange[1],message.author.id)
             channels_echanges.append(channel_echange.id)
             await message.channel.send(f"Échange entre <@{echange[1]}> et <@{message.author.id}> commencé ! Un channel temporaire a été créé : <#{channel_echange.id}>")
@@ -72,6 +72,7 @@ async def on_message(message):
             )
 
         elif main.dresseur2(message.author.id) and message.content == f"{main.get_prefix(message.guild.id)}refuser":
+            [main.delete_channel_echange(channel_echange[0]) for channel_echange in main.dresseur2(message.author.id)]
             await message.channel.send("Échange refusé.")
 
         elif (main.dresseur1(message.author.id) or main.dresseur2(message.author.id)) and message.content == f"{main.get_prefix(message.guild.id)}annuler":

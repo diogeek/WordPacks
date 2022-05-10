@@ -12,7 +12,7 @@ try:
   cursor = sqliteConnection.cursor()
   cursor.execute(f"CREATE TABLE IF NOT EXISTS dresseurs ('ID' INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, 'nom' TEXT, 'cooldown' TEXT, 'boosters_dispo' INT, 'points' INT);")
   cursor.execute(f"CREATE TABLE IF NOT EXISTS mots ('nom' TEXT PRIMARY KEY, 'dresseur' INT, 'rarete' INT);")
-  cursor.execute(f"CREATE TABLE IF NOT EXISTS echange ('nom' TEXT,'dresseur1' TEXT, 'dresseur2' TEXT, 'mot1' TEXT, 'mot2' TEXT, 'halfcomplete' INT, 'origine' TEXT)")
+  cursor.execute(f"CREATE TABLE IF NOT EXISTS echange ('ID' INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, 'nom' TEXT,'dresseur1' TEXT, 'dresseur2' TEXT, 'mot1' TEXT, 'mot2' TEXT, 'halfcomplete' INT, 'origine' TEXT)")
   cursor.execute(f"CREATE TABLE IF NOT EXISTS prefixes ('serveur' TEXT PRIMARY KEY,'prefix' TEXT)")
   sqliteConnection.commit()
 except sqlite3.Error as error:
@@ -212,7 +212,7 @@ def info(dresseur,nom,auteur=None):
 def proposer_echange(dresseur1,dresseur2,origine):
   cursor.execute(f"SELECT * FROM echange WHERE dresseur1='{dresseur1}' AND dresseur2='{dresseur2}'")
   if not cursor.fetchall():
-    cursor.execute(f"INSERT INTO echange VALUES ('', '{dresseur1}', '{dresseur2}', '', '', 0, '{origine}')")
+    cursor.execute(f"INSERT INTO echange (nom, dresseur1, dresseur2, mot1, mot2, halfcomplete, origine) VALUES ('', '{dresseur1}', '{dresseur2}', '', '', 0, '{origine}')")
   sqliteConnection.commit()
   return
 
@@ -220,6 +220,11 @@ def proposer_echange(dresseur1,dresseur2,origine):
 
 def creer_channel_echange(channel_echange,dresseur1,dresseur2):
   cursor.execute(f"UPDATE echange SET nom='{channel_echange}' WHERE dresseur1='{dresseur1}' AND dresseur2='{dresseur2}'")
+  sqliteConnection.commit()
+  return
+
+def delete_channel_echange(channel_echange):
+  cursor.execute(f"DELETE FROM echange WHERE id='{channel_echange}'")
   sqliteConnection.commit()
   return
 
@@ -238,8 +243,6 @@ def halfcomplete(channel):
   cursor.execute(f"SELECT halfcomplete FROM echange WHERE nom='{channel}'")
   return [False,True][cursor.fetchall()[0][0]]
 
-#___________________________________________
-
 def confirmer_mot(channel):
   cursor.execute(f"UPDATE echange SET halfcomplete=1 WHERE nom='{channel}'")
   sqliteConnection.commit()
@@ -251,10 +254,8 @@ def dresseur1(dresseur):
   cursor.execute(f"SELECT nom FROM echange WHERE dresseur1='{dresseur}'")
   return [i[0] for i in cursor.fetchall()]
 
-#___________________________________________
-
 def dresseur2(dresseur):
-  cursor.execute(f"SELECT nom,dresseur1 FROM echange WHERE dresseur2='{dresseur}'")
+  cursor.execute(f"SELECT id,nom,dresseur1 FROM echange WHERE dresseur2='{dresseur}'")
   return cursor.fetchall()
 
 #___________________________________________
@@ -318,6 +319,7 @@ def ajouterscore(auteur, phrase):
   for mot in simp(phrase).split(" "):
     cursor.execute(f"UPDATE dresseurs SET points=points+(SELECT rarete FROM mots WHERE nom='{mot}') WHERE id=(SELECT dresseur FROM mots WHERE nom='{mot}') AND nom!='{auteur}'")
   sqliteConnection.commit()
+  return
 
 def close_db(): #en cas de problème
   sqliteConnection.close()
