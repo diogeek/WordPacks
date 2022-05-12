@@ -142,11 +142,11 @@ async def on_message(message):
             else:
                 await message.channel.send(f":no_entry_sign: Le dresseur `{dresseur.name}` **ne possède pas** le mot '{message.content.split(' ')[1]}'.\n||<@{message.author.id}>||")
 
-        elif message.content == f"{main.get_prefix(message.guild.id)}jecheat":
+        """elif message.content == f"{main.get_prefix(message.guild.id)}jecheat":
             main.remplir_boosters(message.author.id, 999)
             await message.channel.send("Joyeux Anniversaire :)), vous avez obtenu 999 boosters !")
-        #elif message.content.startswith(f"{main.get_prefix(message.guild.id)}entrermot "):
-        #main.capturer_mots([message.content.split(" ")[1]],message.author.id)
+        elif message.content.startswith(f"{main.get_prefix(message.guild.id)}entrermot "):
+        main.capturer_mots([message.content.split(" ")[1]],message.author.id)"""
       
         elif message.content.startswith(
                 f"{main.get_prefix(message.guild.id)}echange "
