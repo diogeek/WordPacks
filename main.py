@@ -11,7 +11,7 @@ try:
   sqliteConnection = sqlite3.connect('WordPacks.db')
   cursor = sqliteConnection.cursor()
   cursor.execute(f"CREATE TABLE IF NOT EXISTS dresseurs ('ID' INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, 'nom' TEXT, 'cooldown' TEXT, 'boosters_dispo' INT, 'points' INT);")
-  cursor.execute(f"CREATE TABLE IF NOT EXISTS mots ('nom' TEXT PRIMARY KEY, 'dresseur' INT, 'rarete' INT);")
+  cursor.execute(f"CREATE TABLE IF NOT EXISTS mots ('nom' TEXT PRIMARY KEY, 'dresseur' INT, 'rarete' INT, 'requis' INT);")
   cursor.execute(f"CREATE TABLE IF NOT EXISTS echange ('ID' INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, 'nom' TEXT,'dresseur1' TEXT, 'dresseur2' TEXT, 'mot1' TEXT, 'mot2' TEXT, 'halfcomplete' INT, 'origine' TEXT)")
   cursor.execute(f"CREATE TABLE IF NOT EXISTS prefixes ('serveur' TEXT PRIMARY KEY,'prefix' TEXT)")
   sqliteConnection.commit()
@@ -73,7 +73,14 @@ def cooldown_ready(dresseur):
     if cooldown<datetime.datetime.now()-datetime.timedelta(hours=cooldown_value):
       return (True,None)
     return (False,str(cooldown-(datetime.datetime.now()-datetime.timedelta(hours=cooldown_value)))[:-7])
-  
+
+#________________________________________________________________________
+
+def update_rarete():
+  cursor.execute(f"UPDATE mots SET requis=rarete+1,rarete=rarete+1 WHERE requis<1")
+  sqliteConnection.commit()
+  return
+
 #________________________________________________________________________
 
 def capturer_mots(mots,dresseur):
@@ -84,10 +91,12 @@ def capturer_mots(mots,dresseur):
     mots_upgrade,mots_final=[],[]
     for mot_capture in mots:
         try:
-            cursor.execute(f"INSERT INTO mots (nom,dresseur,rarete) VALUES ('{mot_capture.split(' ',1)[0]}','{id_dresseur}',1)")
+            cursor.execute(f"INSERT INTO mots (nom,dresseur,rarete,requis) VALUES ('{mot_capture.split(' ',1)[0]}','{id_dresseur}',1,1)")
             mots_final.append(mot_capture)
         except sqlite3.IntegrityError:
-            cursor.execute(f"UPDATE mots SET rarete=rarete+1 WHERE dresseur='{id_dresseur}' AND nom='{mot_capture}' AND rarete<4")
+            cursor.execute(f"UPDATE mots SET requis=requis-1 WHERE dresseur='{id_dresseur}' AND nom='{mot_capture}' AND rarete<6")
+            sqliteConnection.commit()
+            update_rarete()
             cursor.execute(f"SELECT nom FROM mots WHERE dresseur='{id_dresseur}' AND nom='{mot_capture}'")
             try: mots_upgrade.append(cursor.fetchall()[0][0])
             except IndexError :
@@ -102,8 +111,8 @@ def capturer_mots(mots,dresseur):
 def afficher_mots(dresseur):
     cursor.execute(f"select * from dresseurs WHERE nom='{dresseur}'")
     record = cursor.fetchall()
-    cursor.execute(f"select nom,rarete from mots WHERE mots.dresseur='{record[0][0]}'ORDER BY rarete DESC")
-    record = [f"{mot[0]} ({mot[1]})" for mot in cursor.fetchall()]
+    cursor.execute(f"select nom,rarete,requis from mots WHERE mots.dresseur='{record[0][0]}'ORDER BY rarete DESC")
+    record = [f"`{mot[0]}` (rté. **{mot[1]}** - {mot[1]-mot[2]}/{mot[1]})" for mot in cursor.fetchall()]
     return(record,len(record))
 
 #_________________________________________________________________________
@@ -111,7 +120,7 @@ def afficher_mots(dresseur):
 def check_mot(mot,dresseur):
     cursor.execute(f"select ID from dresseurs WHERE nom='{dresseur}'")
     record = cursor.fetchall()
-    cursor.execute(f"select nom,rarete from mots WHERE nom='{mot}' and dresseur='{record[0][0]}'")
+    cursor.execute(f"select nom,rarete,requis from mots WHERE nom='{mot}' and dresseur='{record[0][0]}'")
     try:return(list(cursor.fetchall()[0]))
     except IndexError: return("")
 
@@ -132,6 +141,8 @@ def echanger_mots(channel):
 UPDATE mots SET dresseur='{final[1]}' WHERE nom='{final[2]}';
 UPDATE mots SET rarete=('{rarete}') WHERE nom in ('{final[2]}','{final[3]}');
 DELETE FROM echange WHERE nom='{channel}'""")
+    sqliteConnection.commit()
+    cursor.execute(f"UPDATE mots SET requis=rarete WHERE nom in ('{final[2]}','{final[3]}')")
     sqliteConnection.commit()
     return(f"Échange **complété** ! <@{record[0]}> possède maintenant '{final[3]}', et <@{record[1]}> possède maitenant '{final[2]}'. les 2 mots sont maintenant de rareté `{rarete}`")
 
@@ -187,8 +198,9 @@ def upgrade(dresseur,nb=1):
       cursor.execute(f"UPDATE dresseurs SET boosters_dispo=boosters_dispo-{nb} WHERE nom={dresseur}")
       cursor.execute(f"SELECT nom FROM mots WHERE dresseur={id} ORDER BY RANDOM() LIMIT {nb*2}")
       randomwords="'"+("', '").join([i[0] for i in cursor.fetchall()])+"'"
-      cursor.execute(f"UPDATE mots SET rarete=rarete+1 WHERE nom IN ({randomwords})")
+      cursor.execute(f"UPDATE mots SET requis=requis-1 WHERE nom IN ({randomwords})")
       sqliteConnection.commit()
+      update_rarete()
       return(f"Bravo <@{dresseur}> ! Vous avez sacrifié {nb} booster{'s' if nb!=1 else ''} et avez upgrade les mots suivants : {randomwords}. Il vous reste {nb_dispo-nb} boosters !")
     else: return(f"Désolé <@{dresseur}>, vous n'avez que {nb_dispo} boosters !")
   else: return(f"Désolé <@{dresseur}>, vous n'avez pas assez de mots !")
@@ -324,6 +336,10 @@ def ajouterscore(auteur, phrase):
     cursor.execute(f"UPDATE dresseurs SET points=points+(SELECT rarete FROM mots WHERE nom='{mot}') WHERE id=(SELECT dresseur FROM mots WHERE nom='{mot}') AND nom!='{auteur}'")
   sqliteConnection.commit()
   return
+
+def check_channels_echanges(channel_id):
+  cursor.execute(f"SELECT nom FROM echange WHERE nom='{channel_id}'")
+  return([channel[0] for channel in cursor.fetchall()])
 
 def close_db(): #en cas de problème
   sqliteConnection.close()

@@ -8,7 +8,6 @@ load_dotenv("discord_token.env")
 
 iencli = discord.Client()
 
-channels_echanges=[]
 suppression = []
 numbers=[":one:",":two:",":three:",":four:",":five:",":six:",":seven:",":eight:",":nine:",":keycap_ten:"]
 
@@ -21,7 +20,7 @@ async def on_ready():
 
 @iencli.event
 async def on_message(message):
-    global channels_echanges, suppression
+    global suppression
     if message.author.id == iencli.user.id:  #empêcher que le bot ne détecte ses propres messages
         return None
 
@@ -66,7 +65,6 @@ async def on_message(message):
           for echange in all_echanges:
             channel_echange=await message.guild.create_text_channel('echange-temp', overwrites={message.guild.default_role: discord.PermissionOverwrite(read_messages=False),message.author: discord.PermissionOverwrite(read_messages=True),await iencli.fetch_user(int(echange[2])): discord.PermissionOverwrite(read_messages=True),iencli.user: discord.PermissionOverwrite(read_messages=True)})
             main.creer_channel_echange(channel_echange.id,echange[2],message.author.id)
-            channels_echanges.append(channel_echange.id)
             await message.channel.send(f"Échange entre <@{echange[2]}> et <@{message.author.id}> commencé ! Un channel temporaire a été créé : <#{channel_echange.id}>")
             await channel_echange.send(f"Bienvenue dans un channel temporaire d'échange ! Entrez le mot que vous souhaitez échanger et utilisez tous les deux la commande `{main.get_prefix(message.guild.id)}confirmer` pour compléter l'échange.\n\@everyone")
 
@@ -76,9 +74,9 @@ async def on_message(message):
 
         elif (main.dresseur1(message.author.id) or main.dresseur2(message.author.id)) and message.content == f"{main.get_prefix(message.guild.id)}annuler":
             await message.channel.send("Échange annulé.")
-            if message.channel.id in channels_echanges:
-              channels_echanges.pop(channels_echanges.index(message.channel.id))
-              message.channel.delete()
+            if message.channel.id in main.check_channels_echanges():
+              main.delete_channel_echange(message.channel.id)
+              await message.channel.delete()
 
         elif message.content.startswith(f"{main.get_prefix(message.guild.id)}mokedex"):
           if not message.mentions:
@@ -87,7 +85,7 @@ async def on_message(message):
             await message.channel.send(
                 f"Le dresseur <@{message.author.id}> possède **{count}** mots :"
             )
-            [await message.channel.send(f"`{(', '.join(x))}`") for x in record]
+            [await message.channel.send(f"{(', '.join(x))} ||<@{message.author.id}>||") for x in record]
           elif main.check_dresseur_existe(message.mentions[0].id):
             record,count = main.afficher_mots(str(message.mentions[0].id))
             record = [record[i:i + 50] for i in range(0, len(record), 50)]
@@ -138,19 +136,18 @@ async def on_message(message):
               dresseur=message.mentions[0]
             mot=main.check_mot(message.content.split(" ")[1], dresseur.id)
             if mot:
-                await message.channel.send(f":white_check_mark: Le dresseur `{dresseur.name}` **possède** le mot `{mot[0]}`. Sa rareté est de niveau **{mot[1]}**.\n||<@{message.author.id}>||")
+                await message.channel.send(f":white_check_mark: Le dresseur `{dresseur.name}` **possède** le mot `{mot[0]}`. Sa rareté est de **{mot[1]}** ({mot[1]-mot[2]}/{mot[1]}).\n||<@{message.author.id}>||")
             else:
-                await message.channel.send(f":no_entry_sign: Le dresseur `{dresseur.name}` **ne possède pas** le mot '{message.content.split(' ')[1]}'.\n||<@{message.author.id}>||")
+                await message.channel.send(f":no_entry_sign: Le dresseur `{dresseur.name}` **ne possède pas** le mot '{message.content.split(' ',2)[1]}'.\n||<@{message.author.id}>||")
 
-        """elif message.content == f"{main.get_prefix(message.guild.id)}jecheat":
-            main.remplir_boosters(message.author.id, 999)
-            await message.channel.send("Joyeux Anniversaire :)), vous avez obtenu 999 boosters !")
-        elif message.content.startswith(f"{main.get_prefix(message.guild.id)}entrermot "):
-        main.capturer_mots([message.content.split(" ")[1]],message.author.id)"""
+        #cheats :
+        #elif message.content == f"{main.get_prefix(message.guild.id)}jecheat":
+            #main.remplir_boosters(message.author.id, 999)
+            #await message.channel.send("Joyeux Anniversaire :)), vous avez obtenu 999 boosters !")
+        #elif message.content.startswith(f"{main.get_prefix(message.guild.id)}entrermot "):
+        #main.capturer_mots([message.content.split(" ")[1]],message.author.id)
       
-        elif message.content.startswith(
-                f"{main.get_prefix(message.guild.id)}echange "
-        ):
+        elif message.content.startswith(f"{main.get_prefix(message.guild.id)}echange "):
           try:
             if message.mentions[0].id != message.author.id:
               main.proposer_echange(message.author.id,message.mentions[0].id,message.channel.id)
@@ -165,19 +162,18 @@ async def on_message(message):
           except IndexError:
             await message.channel.send(f"Dresseur '{message.content.split(' ')[1]}' introuvable.")
 
-        elif message.content == f"{main.get_prefix(message.guild.id)}confirmer" and message.channel.id in channels_echanges:
+        elif message.content == f"{main.get_prefix(message.guild.id)}confirmer" and message.channel.id in main.check_channels_echanges():
             await message.channel.send(
                 f"Le dresseur <@{message.author.id}> confirme l'échange."
             )
             if main.halfcomplete(message.channel.id):
                 channel=await iencli.fetch_channel(main.origine(message.channel.id))
                 await channel.send(main.echanger_mots(message.channel.id))
-                channels_echanges.pop(channels_echanges.index(message.channel.id))
                 await message.channel.delete()
             else:
                 main.confirmer_mot(message.channel.id)
 
-        elif message.channel.id in channels_echanges:
+        elif message.channel.id in main.check_channels_echanges():
             if not main.check_mot(message.content, message.author.id):
                 await message.channel.send(f"Le dresseur <@{message.author.id}> ne possède pas le mot '{message.content}'. Veuillez rééssayer.")
             else:
