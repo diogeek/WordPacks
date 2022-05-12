@@ -65,9 +65,9 @@ async def on_message(message):
         if all_echanges and message.content == f"{main.get_prefix(message.guild.id)}accepter":
           for echange in all_echanges:
             channel_echange=await message.guild.create_text_channel('echange-temp', overwrites={message.guild.default_role: discord.PermissionOverwrite(read_messages=False),message.author: discord.PermissionOverwrite(read_messages=True),await iencli.fetch_user(int(echange[2])): discord.PermissionOverwrite(read_messages=True),iencli.user: discord.PermissionOverwrite(read_messages=True)})
-            main.creer_channel_echange(channel_echange.id,echange[1],message.author.id)
+            main.creer_channel_echange(channel_echange.id,echange[2],message.author.id)
             channels_echanges.append(channel_echange.id)
-            await message.channel.send(f"Échange entre <@{echange[1]}> et <@{message.author.id}> commencé ! Un channel temporaire a été créé : <#{channel_echange.id}>")
+            await message.channel.send(f"Échange entre <@{echange[2]}> et <@{message.author.id}> commencé ! Un channel temporaire a été créé : <#{channel_echange.id}>")
             await channel_echange.send(f"Bienvenue dans un channel temporaire d'échange ! Entrez le mot que vous souhaitez échanger et utilisez tous les deux la commande `{main.get_prefix(message.guild.id)}confirmer` pour compléter l'échange.\n\@everyone"
             )
 
@@ -191,8 +191,8 @@ async def on_message(message):
             if not main.check_mot(message.content, message.author.id):
                 await message.channel.send(f"Le dresseur <@{message.author.id}> ne possède pas le mot '{message.content}'. Veuillez rééssayer.")
             else:
-                main.changer_mot(message.channel.id,message.author.id,message.content)
-                await message.channel.send(f"Le dresseur <@{message.author.id}> propose le mot '{message.content}' pour l'échange !")
+                
+                await message.channel.send(f"Le dresseur <@{message.author.id}> propose le mot '{message.content}' (rareté : `{main.changer_mot(message.channel.id,message.author.id,message.content)}`) pour l'échange !")
 
         elif message.content == f"{main.get_prefix(message.guild.id)}quitter":
             suppression.append(message.author.id)

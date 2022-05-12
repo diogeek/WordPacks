@@ -126,11 +126,14 @@ def echanger_mots(channel):
       final.append(cursor.fetchall()[0][0])
     cursor.execute(f"SELECT mot1,mot2 FROM echange WHERE nom='{channel}'")
     final=final[2:]+list(cursor.fetchall()[0])
-    cursor.execute(f"UPDATE mots SET dresseur='{final[0]}' WHERE nom='{final[3]}'")
-    cursor.execute(f"UPDATE mots SET dresseur='{final[1]}' WHERE nom='{final[2]}'")
-    cursor.execute(f"DELETE FROM echange WHERE nom='{channel}'")
+    cursor.execute(f"SELECT rarete from mots WHERE nom IN ('{final[2]}','{final[3]}') ORDER BY rarete LIMIT 1")
+    rarete=cursor.fetchall()[0][0]
+    cursor.executescript(f"""UPDATE mots SET dresseur='{final[0]}' WHERE nom='{final[3]}';
+UPDATE mots SET dresseur='{final[1]}' WHERE nom='{final[2]}';
+UPDATE mots SET rarete=('{rarete}') WHERE nom in ('{final[2]}','{final[3]}');
+DELETE FROM echange WHERE nom='{channel}'""")
     sqliteConnection.commit()
-    return(f"Échange **complété** ! <@{record[0]}> possède maintenant '{final[3]}', et <@{record[1]}> possède maitenant '{final[2]}'")
+    return(f"Échange **complété** ! <@{record[0]}> possède maintenant '{final[3]}', et <@{record[1]}> possède maitenant '{final[2]}'. les 2 mots sont maintenant de rareté `{rarete}`")
 
 #______________________________________________
 
@@ -196,7 +199,7 @@ def info(dresseur,nom,auteur=None):
   from random import choice
   cursor.execute(f"SELECT ID,nom,points,boosters_dispo FROM dresseurs WHERE nom='{dresseur}'")
   record=list(cursor.fetchall()[0])
-  cursor.execute(f"SELECT COUNT(*),rarete from mots where dresseur={record[0]} ORDER BY rarete DESC LIMIT 1")
+  cursor.execute(f"SELECT COUNT(*),MAX(rarete) from mots where dresseur={record[0]};")
   record.extend(list(cursor.fetchall()[0]))
   return(f"```DRESSEUR '{nom.upper()}'```\n\
 {choice([':person_bowing:',':person_doing_cartwheel:',':person_facepalming:',':person_raising_hand:',':person_running:',':person_tipping_hand:',':person_in_lotus_position:',':person_in_tuxedo:',':person_in_manual_wheelchair:',':person_in_motorized_wheelchair:',':person_in_steamy_room:',':person_playing_handball:',':person_pouting:',':person_shrugging:',':person_standing:',':person_frowning:',':person_gesturing_no:',':person_gesturing_ok:',':person_getting_massage:',':person_golfing:',':person_juggling:',':person_kneeling:',':person_lifting_weights:',':person_walking:',':person_with_probing_cane:',':person_bouncing_ball:'])} _Nom_ : `{nom}`\n\n\
@@ -233,9 +236,10 @@ def delete_channel_echange(channel_echange):
 def changer_mot(channel,dresseur,mot):
   cursor.execute(f"SELECT * FROM echange WHERE nom='{channel}'")
   record=list(cursor.fetchall()[0])
-  cursor.execute(f"UPDATE echange SET mot{record.index(str(dresseur))}='{mot}' WHERE dresseur{record.index(str(dresseur))}='{dresseur}' AND nom='{channel}'")
+  cursor.execute(f"UPDATE echange SET mot{record.index(str(dresseur))-1}='{mot}' WHERE dresseur{record.index(str(dresseur))-1}='{dresseur}' AND nom='{channel}'")
   sqliteConnection.commit()
-  return
+  cursor.execute(f"SELECT rarete FROM mots WHERE nom='{mot}'")
+  return cursor.fetchall()[0][0]
 
 #___________________________________________
 
