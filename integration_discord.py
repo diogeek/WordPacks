@@ -36,7 +36,7 @@ async def on_message(message):
 `{main.get_prefix(message.guild.id)}quitter` - supprimer votre profil de dresseur ainsi que tous vos mots, **définitivement**. Une confirmation vous sera demandée.\n\n\
 <a:mokeball:958666482894643200> _Commandes relatives aux mots_\n\n\
 `{main.get_prefix(message.guild.id)}mokedex <dresseur>` - afficher les mots que vous possédez, ainsi que leur rareté. Les mots sont triés par rareté. Il est possible d'afficher le mokédex d'un autre dresseur en le mentionnant.\n\
-`{main.get_prefix(message.guild.id)}recherche [mot]` - vérifier si vous possédez un mot.\n\
+`{main.get_prefix(message.guild.id)}recherche [mot] <dresseur>` - vérifier si vous possédez un mot. Il est possible de faire une recherche dans le mokédex d'un autre dresseur en le mentionnant.\n\
 `{main.get_prefix(message.guild.id)}booster` - ouvrir un booster de 3 mots ! Vous obtenez 3 boosters toutes les 12 heures.\n\
 `{main.get_prefix(message.guild.id)}megabooster` - ouvrir 3 boosters de 3 mots, pour 9 mots **SANS DOUBLONS** !\n\
 `{main.get_prefix(message.guild.id)}upgrade <nombre>` - sacrifier des boosters (1 de base) pour augmenter la rareté de 2 mots aléatoires de votre mokédex par booster sacrifié.\n\
@@ -68,8 +68,7 @@ async def on_message(message):
             main.creer_channel_echange(channel_echange.id,echange[2],message.author.id)
             channels_echanges.append(channel_echange.id)
             await message.channel.send(f"Échange entre <@{echange[2]}> et <@{message.author.id}> commencé ! Un channel temporaire a été créé : <#{channel_echange.id}>")
-            await channel_echange.send(f"Bienvenue dans un channel temporaire d'échange ! Entrez le mot que vous souhaitez échanger et utilisez tous les deux la commande `{main.get_prefix(message.guild.id)}confirmer` pour compléter l'échange.\n\@everyone"
-            )
+            await channel_echange.send(f"Bienvenue dans un channel temporaire d'échange ! Entrez le mot que vous souhaitez échanger et utilisez tous les deux la commande `{main.get_prefix(message.guild.id)}confirmer` pour compléter l'échange.\n\@everyone")
 
         elif main.dresseur2(message.author.id) and message.content == f"{main.get_prefix(message.guild.id)}refuser":
             [main.delete_channel_echange(channel_echange[0]) for channel_echange in main.dresseur2(message.author.id)]
@@ -104,8 +103,7 @@ async def on_message(message):
                 (record, mots_upgrade), boosters_restants = main.ouverture_booster(
                     message.author.id)
                 await message.channel.send(
-                    f"""Bravo <@{message.author.id}> ! Tu obtiens les mots suivants : **{(', '.join(record))}**{f" et upgrade les mots suivants : **{(', ').join(mots_upgrade)}**" if mots_upgrade else ""}. Il te reste {boosters_restants} boosters !"""
-                )
+                    f"""Bravo <@{message.author.id}> ! Tu obtiens les mots suivants : **{(', '.join(record))}**{f" et upgrade les mots suivants : **{(', ').join(mots_upgrade)}**" if mots_upgrade else ""}. Il te reste {boosters_restants} boosters !""")
             else:
                 if main.cooldown_ready(message.author.id)[0]:
                     main.remplir_boosters(message.author.id)
@@ -113,8 +111,7 @@ async def on_message(message):
                     (record, mots_upgrade), boosters_restants = main.ouverture_booster(
                         message.author.id)
                     await message.channel.send(
-                        f"""Bravo <@{message.author.id}> ! Tu obtiens les mots suivants : **{(', '.join(record))}**{f" et upgrade les mots suivants : **{(', ').join(mots_upgrade)}**" if mots_upgrade else ""}. Il te reste {boosters_restants} boosters !"""
-                    )
+                        f"""Bravo <@{message.author.id}> ! Tu obtiens les mots suivants : **{(', '.join(record))}**{f" et upgrade les mots suivants : **{(', ').join(mots_upgrade)}**" if mots_upgrade else ""}. Il te reste {boosters_restants} boosters !""")
                 else:
                     await message.channel.send(
                         f"Désolé <@{message.author.id}>, réessaie dans {main.cooldown_ready(message.author.id)[1]}"
@@ -124,33 +121,26 @@ async def on_message(message):
             if main.boosters_dispo(message.author.id, 3)[0]:
                 (record, mots_upgrade), boosters_restants = (main.ouverture_booster(
                     message.author.id, 3))
-                await message.channel.send(
-                    f"""Bravo <@{message.author.id}> ! Tu obtiens les mots suivants : **{(', '.join(record))}**{f" et upgrade les mots suivants : **{(', ').join(mots_upgrade)}**" if mots_upgrade else ""}. Il te reste {boosters_restants} boosters !"""
-                )
+                await message.channel.send(f"""Bravo <@{message.author.id}> ! Tu obtiens les mots suivants : **{(', '.join(record))}**{f" et upgrade les mots suivants : **{(', ').join(mots_upgrade)}**" if mots_upgrade else ""}. Il te reste {boosters_restants} boosters !""")
             else:
                 if main.cooldown_ready(message.author.id)[0]:
                     main.remplir_boosters(message.author.id)
                     record = []
                     (record, mots_upgrade), boosters_restants = main.ouverture_booster(
                         message.author.id, 3)
-                    await message.channel.send(
-                        f"""Bravo <@{message.author.id}> ! Tu obtiens les mots suivants : **{(', '.join(record))}**{f" et upgrade les mots suivants : **{(', ').join(mots_upgrade)}**" if mots_upgrade else ""}. Il te reste {boosters_restants} boosters !"""
-                    )
+                    await message.channel.send(f"""Bravo <@{message.author.id}> ! Tu obtiens les mots suivants : **{(', '.join(record))}**{f" et upgrade les mots suivants : **{(', ').join(mots_upgrade)}**" if mots_upgrade else ""}. Il te reste {boosters_restants} boosters !""")
                 else:
-                    await message.channel.send(
-                        f"Désolé <@{message.author.id}>, réessaie dans {main.cooldown_ready(message.author.id)[1]}"
-                    )
+                    await message.channel.send(f"Désolé <@{message.author.id}>, réessaie dans {main.cooldown_ready(message.author.id)[1]}")
 
         elif message.content.startswith(f"{main.get_prefix(message.guild.id)}recherche "):
-            mot=main.check_mot(message.content.split(" ")[1], message.author.id)
+            dresseur=message.author
+            if message.mentions:
+              dresseur=message.mentions[0]
+            mot=main.check_mot(message.content.split(" ")[1], dresseur.id)
             if mot:
-                await message.channel.send(
-                    f":white_check_mark: Le dresseur <@{message.author.id}> **possède** le mot **{mot[0]}**. Sa rareté est de niveau **{mot[1]}**."
-                )
+                await message.channel.send(f":white_check_mark: Le dresseur `{dresseur.name}` **possède** le mot `{mot[0]}`. Sa rareté est de niveau **{mot[1]}**.\n||<@{message.author.id}>||")
             else:
-                await message.channel.send(
-                    f":no_entry_sign: Le dresseur <@{message.author.id}> **ne possède pas** le mot '{message.content.split(' ')[1]}'."
-                )
+                await message.channel.send(f":no_entry_sign: Le dresseur `{dresseur.name}` **ne possède pas** le mot '{message.content.split(' ')[1]}'.\n||<@{message.author.id}>||")
 
         elif message.content == f"{main.get_prefix(message.guild.id)}jecheat":
             main.remplir_boosters(message.author.id, 999)

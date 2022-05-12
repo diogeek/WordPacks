@@ -140,8 +140,8 @@ DELETE FROM echange WHERE nom='{channel}'""")
 def suppression_dresseur(dresseur):
     cursor.execute(f"select ID from dresseurs WHERE nom='{dresseur}'")
     record = cursor.fetchall()
-    cursor.execute(f"DELETE from mots WHERE dresseur='{record[0][0]}'")
-    cursor.execute(f"DELETE from dresseurs WHERE nom='{dresseur}'")
+    cursor.executescript(f"""DELETE from mots WHERE dresseur='{record[0][0]}';
+DELETE from dresseurs WHERE nom='{dresseur}'""")
     sqliteConnection.commit()
     return(f"Dresseur <@{dresseur}> supprimé avec succès. On est tristes de vous voir partir !")
 
