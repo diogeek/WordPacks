@@ -339,9 +339,7 @@ def ajouterscore(auteur, phrase):
 
 def check_channels_echanges(channel_id):
   cursor.execute(f"SELECT nom FROM echange WHERE nom='{channel_id}'")
-  res=[channel[0] for channel in cursor.fetchall()]
-  print(res)
-  return(res)
+  return([channel[0] for channel in cursor.fetchall()])
 
 def delete_all_echanges(dresseur,nombre=1): #suppr tous les échanges INITIES par ce dresseur
   cursor.execute(f"DELETE FROM echange WHERE dresseur{nombre}='{dresseur}'")
