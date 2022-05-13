@@ -239,7 +239,7 @@ def creer_channel_echange(channel_echange,dresseur1,dresseur2):
   return
 
 def delete_channel_echange(channel_echange):
-  cursor.execute(f"DELETE FROM echange WHERE id='{channel_echange}'")
+  cursor.execute(f"DELETE FROM echange WHERE nom='{channel_echange}'")
   sqliteConnection.commit()
   return
 
@@ -270,8 +270,8 @@ def dresseur1(dresseur):
   cursor.execute(f"SELECT nom FROM echange WHERE dresseur1='{dresseur}'")
   return [i[0] for i in cursor.fetchall()]
 
-def dresseur2(dresseur):
-  cursor.execute(f"SELECT id,nom,dresseur1 FROM echange WHERE dresseur2='{dresseur}'")
+def dresseur2(dresseur,vide=True):
+  cursor.execute(f"""SELECT id,nom,dresseur1 FROM echange WHERE dresseur2='{dresseur}'{" AND nom=''" if vide else ""}""")
   return cursor.fetchall()
 
 #___________________________________________
@@ -339,7 +339,19 @@ def ajouterscore(auteur, phrase):
 
 def check_channels_echanges(channel_id):
   cursor.execute(f"SELECT nom FROM echange WHERE nom='{channel_id}'")
-  return([channel[0] for channel in cursor.fetchall()])
+  res=[channel[0] for channel in cursor.fetchall()]
+  print(res)
+  return(res)
+
+def delete_all_echanges(dresseur,nombre=1): #suppr tous les échanges INITIES par ce dresseur
+  cursor.execute(f"DELETE FROM echange WHERE dresseur{nombre}='{dresseur}'")
+  sqliteConnection.commit()
+  return
+
+def mot_propose(dresseur,channel):
+  cursor.execute(f"SELECT CASE dresseur1 WHEN '{dresseur}' THEN mot1 ELSE mot2 END FROM echange WHERE nom='{channel}'")
+  return(cursor.fetchall()[0][0])
+  
 
 def close_db(): #en cas de problème
   sqliteConnection.close()
