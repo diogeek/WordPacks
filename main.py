@@ -102,7 +102,7 @@ def capturer_mots(mots,dresseur):
             cursor.execute(f"SELECT nom FROM mots WHERE dresseur='{id_dresseur}' AND nom='{mot_capture}'")
             try: mots_upgrade.append(cursor.fetchall()[0][0])
             except IndexError :
-              cursor.execute(f"UPDATE mots SET dresseur = '{id_dresseur}' WHERE nom='{mot_capture}'")
+              cursor.execute(f"UPDATE mots SET dresseur = '{id_dresseur}', rarete=1,requis=1 WHERE nom='{mot_capture}'")
               mots_final.append(mot_capture)
     sqliteConnection.commit()
     return(mots_final,mots_upgrade)
@@ -366,7 +366,7 @@ def echangetoggle(dresseur):
 
 def check_echange_ouvert(dresseur):
   cursor.execute(f"SELECT echangetoggle FROM dresseurs WHERE nom='{dresseur}'")
-  return(cursor.fetchall()[0][0])
+  return({'FERME':False,'OUVERT':True}[cursor.fetchall()[0][0]])
 
 def close_db(): #en cas de problème
   sqliteConnection.close()

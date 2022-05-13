@@ -16,18 +16,39 @@ async def on_ready():
   for server in iencli.guilds:
     main.ajouter_serveur(server.id)
   print(f'Logged in as {iencli.user.name} - {iencli.user.id}')
-  await iencli.change_presence(activity=discord.Game(name="!help pour les commandes"))
+  await iencli.change_presence(activity=discord.Game(name="!intro / !help"))
 
 @iencli.event
 async def on_message(message):
     global suppression
     if message.author.id == iencli.user.id:  #empêcher que le bot ne détecte ses propres messages
         return None
-
+    elif message.content == f"{main.get_prefix(message.guild.id)}intro":
+        await message.channel.send(f"<a:mokeball:958666482894643200> _**WORDPACKS**_ <a:mokeball:958666482894643200>\n\n\
+**BIENVENUE** dans la merveilleuse aventure de Wordpacks !\n\
+Ceci est l'introduction explicative du bot. Si vous cherchez les commandes, référez vous à `{main.get_prefix(message.guild.id)}help` !\n\n\
+Wordpacks est un jeu sous forme de bot.\n\
+Le but du jeu est de collectionner des mots de la langue française en les obtenant dans des **boosters**, des petits packs de 3 mots que vous obtiendrez par intervalles de 12 heures.\n\n\
+__**Points**__\n\
+Lorsqu'un utilisateur de discord écrira l'un de vos mots dans un message, vous obtiendrez un petit nombre de points, égal à la rareté du mot en question.\n\n\
+__**Rareté**__\n\
+Chacun de vos mots est de rareté 1 de base. Il vous rapportera donc 1 point à chaque utilisation de celui-ci par un utilisateur de Discord. Afin d'augmenter la rareté de l'un de vos mots (jusqu'au maximum de 6), il vous faudra obtenir ce mot autant de fois que son niveau actuel.\n\
+Par exemple, pour passer du niveau 4 au niveau 5, il vous faudra obtenir ce mot 4 fois !")
+        await message.channel.send("Il vous faudra donc obtenir un mot 15 fois pour le monter au niveau maximum.\n\n\
+__**Upgrade**__\n\
+Il est aussi possible à l'aide d'une commande de sacrifier l'un de vos boosters disponibles pour obtenir 2 mots que vous avez déjà ! de cette façon vous vous assurez de monter en niveau certains de vos mots, mais ils seront tout de même sélectionnés au hasard dans votre Mokédex.\n\n\
+__**Échange**__\n\
+Il est possible, à travers certaines commandes, d'échanger un de vos mots avec un mot d'un autre dresseur, dans un salon d'échange privé. ATTENTION ! Chaque mot affecté par l'échange prendra pour rareté la plus basse de celles des mots échangés.\n\
+Par exemple, si vous échangez un mot du niveau 4 et un mot du niveau 2, les deux mots seront de niveau 2. de plus, ils perdront d'éventuels mots obtenus pour leur montée de niveau.\n\n\
+__**Informations supplémentaires**__\n\
+ - Il est parfaitement possible d'obtenir un mot déjà possédé par un dresseur. Le cas échéant, vous lui volerez son mot sans scrupules et sa rareté retombera à 1.\n\
+ - Le bot est sûrement rempli de bugs. Si vous en croisez un, mettez un masque et merci d'en parler à <@504697143932485656>, son créateur ! <a:dresseur:958663675374370836>\n\n\
+Allez, il ne vous reste plus qu'à utiliser la commande `!kukujariv` pour débuter votre aventure de dresseur Wordpacks !")
     elif message.content == f"{main.get_prefix(message.guild.id)}help":
         await message.channel.send(f"**Commandes du bot Wordpacks**\n\n\
+`{main.get_prefix(message.guild.id)}intro` - Wordpacks c'est quoi ?\n\
 `{main.get_prefix(message.guild.id)}help` - afficher cette page\n\
-`{main.get_prefix(message.guild.id)}wordpacksprefix` [prefix] - changer le prefix des commandes du bot WordPacks (`!` par défaut). Cette commande fonctionnera toujours avec `!wordpacksprefix` afin de pouvoir corriger d'éventuels changements accidentels.\n\n\
+`{main.get_prefix(message.guild.id)}wordpacksprefix` [prefix] - changer le prefix des commandes du bot WordPacks (`!` par défaut). Cette commande fonctionnera toujours avec `!wordpacksprefix` afin de pouvoir corriger d'éventuels changements accidentels. La taille maximale d'un prefix est de 5 caractères.\n\n\
 <a:dresseur:958663675374370836> _Commandes relatives aux dresseurs_\n\n\
 `{main.get_prefix(message.guild.id)}kukujariv` - s'inscrire en tant que dresseur.\n\
 `{main.get_prefix(message.guild.id)}info <dresseur>` - afficher diverses informations sur votre profil de dresseur. Il est possible d'afficher la carte d'infos d'un autre dresseur en le mentionnant.\n\
@@ -53,7 +74,7 @@ async def on_message(message):
     if message.content.startswith("!wordpacksprefix ") or message.content.startswith(f"{main.get_prefix(message.guild.id)}wordpacksprefix "):
       if message.mentions:
         await message.channel.send("Veuillez entrer un prefix valide.")
-      else:
+      elif len(message.content.split(" ")[1])<5:
         try:
           await message.channel.send(main.changer_prefix(message.guild.id,message.content.split(" ")[1]))
         except IndexError:
@@ -66,7 +87,7 @@ async def on_message(message):
         )
     elif main.check_dresseur_existe(message.author.id):
         if message.content.startswith(f"{main.get_prefix(message.guild.id)}accepter ") and not main.check_channels_echanges(message.channel.id) and message.mentions: #accepter la demande en mentionnant qqn
-          if main.check_dresseur_existe(message.mentions[0]):
+          if main.check_dresseur_existe(message.mentions[0].id):
             channel_echange=await message.guild.create_text_channel('echange-temp', overwrites={message.guild.default_role: discord.PermissionOverwrite(read_messages=False),message.author: discord.PermissionOverwrite(read_messages=True),message.mentions[0]: discord.PermissionOverwrite(read_messages=True),iencli.user: discord.PermissionOverwrite(read_messages=True)})
             main.creer_channel_echange(channel_echange.id,message.mentions[0].id,message.author.id)
             await message.channel.send(f"Échange entre <@{message.mentions[0].id}> et <@{message.author.id}> commencé ! Un channel temporaire a été créé. Pour y accéder, cliquez ici : <#{channel_echange.id}>")
@@ -178,7 +199,7 @@ async def on_message(message):
       
         elif message.content.startswith(f"{main.get_prefix(message.guild.id)}echange "):
           try:
-            if message.mentions[0].id != message.author.id:
+            if message.mentions[0].id != message.author.id and not main.check_channels_echanges(dresseur1=message.author.id,dresseur2=message.mentions[0].id) and not main.check_channels_echanges(dresseur1=message.mentions[0].id,dresseur2=message.author.id):
               if main.check_dresseur_existe(message.mentions[0].id):
                 if main.check_echange_ouvert(message.mentions[0].id):
                   main.proposer_echange(message.author.id,message.mentions[0].id,message.channel.id)
