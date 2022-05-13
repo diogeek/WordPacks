@@ -184,7 +184,7 @@ async def on_message(message):
                   main.proposer_echange(message.author.id,message.mentions[0].id,message.channel.id)
                   await message.channel.send(
                       f"Le dresseur <@{message.author.id}> propose un **échange** avec le dresseur <@{message.mentions[0].id}> !\n\
-  <@{message.mentions[0].id}>, utilisez les commandes `{main.get_prefix(message.guild.id)}accepter` ou `{main.get_prefix(message.guild.id)}refuser`. <@{message.author.id}>, utilisez la commande `{main.get_prefix(message.guild.id)}annuler` à tout moment pour annuler vos propositions d'échange en cours."
+  <@{message.mentions[0].id}>, utilisez les commandes `{main.get_prefix(message.guild.id)}accepter @{message.author.name}` ou `{main.get_prefix(message.guild.id)}refuser @{message.author.name}`. <@{message.author.id}>, utilisez la commande `{main.get_prefix(message.guild.id)}annuler @{message.mentions[0].name}` à tout moment pour annuler cette proposition d'échange."
                   )
                 else:
                   await message.channel.send(f"Désolé <@{message.author.id}>, ce dresseur n'accepte pas les propositions d'échange.")

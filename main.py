@@ -19,6 +19,7 @@ except sqlite3.Error as error:
   print(f"Error while connecting to sqlite : {error}")
 
 def simp(mot):
+    mot=mot.replace("Ã","é")
     mot=mot.replace("Ã©","é")
     mot=mot.replace("Ã¨","è")
     mot=mot.replace("Ãª","ê")
@@ -28,6 +29,7 @@ def simp(mot):
     mot=mot.replace("Ã¯","ï")
     mot=mot.replace("Ã¤","ä")
     mot=mot.replace("Ã¢","â")
+    mot=mot.replace("Ã","à")
     mot=mot.replace("Ã ","à")
     mot=mot.replace("Ã§","ç")
     mot=mot.replace("Ã»","û")
@@ -61,11 +63,11 @@ def ouverture_booster(dresseur,nb=1):
   #else: code = requests.get('https://www.textfixerfr.com/outils/generateur-de-mots-aleatoires.php') faut trouver un moyen de faire marcher ça
   #else: code = requests.get('http://romainvaleri.online.fr/' ça aussi
   lines=list(code.iter_lines())
-  decalage=0
-  liste=[simp(lines[112+decalage+i*6].decode("utf-8")) if simp(lines[112+i*6].decode("utf-8"))!='br div stylefont-sizeem colorc' else simp(lines[113+i*6].decode("utf-8")) for i in range(nb*taille_booster)]
+  liste=[simp(lines[87+i*6].decode("utf-8")) for i in range(nb*taille_booster)]
   return(capturer_mots(liste,dresseur),boosters_restants)
 
-#________________________________________________________________________
+#________________________________________________________________________ CODE A GARDER SI JAMAIS ON RETOURNE A  "lines[112+i*6].decode("utf-8")" MAIS SINON TRQL :
+#if simp(lines[112+i*6].decode("utf-8"))!='br div stylefont-sizeem colorc' and not all([bug in simp(lines[112+i*6].decode("utf-8")) for bug in ['value','option']]) else simp(lines[87+i*6].decode("utf-8")) if all([bug in simp(lines[112+i*6].decode("utf-8")) for bug in ['value','option']]) else simp(lines[113+i*6].decode("utf-8"))
 
 def cooldown_ready(dresseur):
     cursor.execute(f"select cooldown from dresseurs WHERE nom='{dresseur}'")
