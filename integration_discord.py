@@ -38,13 +38,18 @@ async def on_message(message):
 `{main.get_prefix(message.guild.id)}recherche [mot] <dresseur>` - vérifier si vous possédez un mot. Il est possible de faire une recherche dans le mokédex d'un autre dresseur en le mentionnant.\n\
 `{main.get_prefix(message.guild.id)}booster` - ouvrir un booster de 3 mots ! Vous obtenez 3 boosters toutes les 12 heures.\n\
 `{main.get_prefix(message.guild.id)}megabooster` - ouvrir 3 boosters de 3 mots, pour 9 mots **SANS DOUBLONS** !\n\
-`{main.get_prefix(message.guild.id)}upgrade <nombre>` - sacrifier des boosters (1 de base) pour augmenter la rareté de 2 mots aléatoires de votre mokédex par booster sacrifié.\n\
-`{main.get_prefix(message.guild.id)}echange [dresseur]` - proposer un échange avec un dresseur.\n\n\
+`{main.get_prefix(message.guild.id)}upgrade <nombre>` - sacrifier des boosters (1 de base) pour augmenter la rareté de 2 mots aléatoires de votre mokédex par booster sacrifié.")
+        await message.channel.send(f"`{main.get_prefix(message.guild.id)}echange [dresseur]` - proposer un échange avec un dresseur.\n\n\
 <:trade:958666805889601576> _Commandes relatives à l'échange_\n\n\
-`{main.get_prefix(message.guild.id)}accepter` - accepter la proposition d'échange et créer un channel temporaire.\n\
-`{main.get_prefix(message.guild.id)}refuser` - refuser la proposition d'échange.\n\
-`{main.get_prefix(message.guild.id)}annuler` - annuler l'échange / la proposition d'échange en cours et supprimer le channel temporaire si il en existait un.\n\
-`{main.get_prefix(message.guild.id)}`confirmer - compléter l'échange.")
+`{main.get_prefix(message.guild.id)}echangetoggle` - activer/désactiver la possibilité pour les dresseurs de vous proposer des échanges.\n\
+`{main.get_prefix(message.guild.id)}accepter <dresseur>` - accepter la proposition d'échange d'un dresseur et créer un channel d'échange temporaire.\n\
+`{main.get_prefix(message.guild.id)}acceptertout` - accepter **toutes** les propositions d'échange et créer un channel d'échange temporaire pour chacune d'entre elles.\n\
+`{main.get_prefix(message.guild.id)}refuser <dresseur>`  - refuser la proposition d'échange d'un dresseur.\n\
+`{main.get_prefix(message.guild.id)}refusertout` - refuser **toutes** les propositions d'échange que l'on vous a fait.\n\
+`{main.get_prefix(message.guild.id)}annuler <dresseur>` (en dehors d'un channel d'échange) - annuler la proposition d'échange faite à un dresseur.\n\
+`{main.get_prefix(message.guild.id)}annuler` (dans un channel d'échange) - annuler l'échange en cours et supprimer le channel temporaire.\n\
+`{main.get_prefix(message.guild.id)}annulertout` - annuler toutes les propositions d'échange que vous avez faites. Ceci n'annulera pas d'éventuels échanges en cours.\n\
+`{main.get_prefix(message.guild.id)}confirmer` (dans un channel d'échange) - compléter l'échange.")
     if message.content.startswith("!wordpacksprefix ") or message.content.startswith(f"{main.get_prefix(message.guild.id)}wordpacksprefix "):
       if message.mentions:
         await message.channel.send("Veuillez entrer un prefix valide.")
@@ -60,27 +65,48 @@ async def on_message(message):
             f"Dresseur <@{message.author.id}> créé ! Voici **5** boosters pour commencer. Utilisez `{main.get_prefix(message.guild.id)}booster` pour en ouvrir un ou `{main.get_prefix(message.guild.id)}help` pour afficher toutes les commandes ! Attrapez les tous !"
         )
     elif main.check_dresseur_existe(message.author.id):
-        if message.content == f"{main.get_prefix(message.guild.id)}" and not main.check_channels_echanges(message.channel.id):
+        if message.content.startswith(f"{main.get_prefix(message.guild.id)}accepter ") and not main.check_channels_echanges(message.channel.id) and message.mentions: #accepter la demande en mentionnant qqn
+          if main.check_dresseur_existe(message.mentions[0]):
+            channel_echange=await message.guild.create_text_channel('echange-temp', overwrites={message.guild.default_role: discord.PermissionOverwrite(read_messages=False),message.author: discord.PermissionOverwrite(read_messages=True),message.mentions[0]: discord.PermissionOverwrite(read_messages=True),iencli.user: discord.PermissionOverwrite(read_messages=True)})
+            main.creer_channel_echange(channel_echange.id,message.mentions[0].id,message.author.id)
+            await message.channel.send(f"Échange entre <@{message.mentions[0].id}> et <@{message.author.id}> commencé ! Un channel temporaire a été créé. Pour y accéder, cliquez ici : <#{channel_echange.id}>")
+            await channel_echange.send(f"Bienvenue dans un channel temporaire d'échange ! Entrez le mot que vous souhaitez échanger et utilisez tous les deux la commande `{main.get_prefix(message.guild.id)}confirmer` pour compléter l'échange, ou utilisez `{main.get_prefix(message.guild.id)}annuler` à tout moment pour annuler l'échange.\n||@everyone||")
+        elif message.content == f"{main.get_prefix(message.guild.id)}acceptertout" and not main.check_channels_echanges(message.channel.id): #accepter toutes les demandes
           all_echanges=main.dresseur2(message.author.id)
           if all_echanges:
             for echange in all_echanges:
               channel_echange=await message.guild.create_text_channel('echange-temp', overwrites={message.guild.default_role: discord.PermissionOverwrite(read_messages=False),message.author: discord.PermissionOverwrite(read_messages=True),await iencli.fetch_user(int(echange[2])): discord.PermissionOverwrite(read_messages=True),iencli.user: discord.PermissionOverwrite(read_messages=True)})
               main.creer_channel_echange(channel_echange.id,echange[2],message.author.id)
-              await message.channel.send(f"Échange entre <@{echange[2]}> et <@{message.author.id}> commencé ! Un channel temporaire a été créé : <#{channel_echange.id}>")
+              await message.channel.send(f"Échange entre <@{echange[2]}> et <@{message.author.id}> commencé ! Un channel temporaire a été créé. Pour y accéder, cliquez ici : <#{channel_echange.id}>")
               await channel_echange.send(f"Bienvenue dans un channel temporaire d'échange ! Entrez le mot que vous souhaitez échanger et utilisez tous les deux la commande `{main.get_prefix(message.guild.id)}confirmer` pour compléter l'échange, ou utilisez `{main.get_prefix(message.guild.id)}annuler` à tout moment pour annuler l'échange.\n||@everyone||")
 
-        elif main.dresseur2(message.author.id) and message.content == f"{main.get_prefix(message.guild.id)}refuser":
+        elif main.dresseur2(message.author.id) and message.content == f"{main.get_prefix(message.guild.id)}refusertout" and not main.check_channels_echanges(message.channel.id): #refuser toutes les demandes
             main.delete_all_echanges(message.author.id,2)
-            await message.channel.send("Échange(s) refusé(s).")
+            await message.channel.send("Propositions d'échange refusées.")
 
-        elif (main.dresseur1(message.author.id) or (main.dresseur2(message.author.id,False) and main.check_channels_echanges(message.channel.id))) and message.content == f"{main.get_prefix(message.guild.id)}annuler":
-            await message.channel.send("Échange(s) annulé(s).")
+        elif main.dresseur2(message.author.id) and message.content.startswith(f"{main.get_prefix(message.guild.id)}refuser ") and message.mentions and not main.check_channels_echanges(message.channel.id): #refuser en mentionnant qqn
+          if main.check_dresseur_existe(message.mentions[0].id):
+            main.delete_channel_echange(dresseur1=message.mentions[0].id,dresseur2=message.author.id)
+            await message.channel.send("Échange refusé.")
+            
+        elif main.check_channels_echanges(message.channel.id) and message.content == f"{main.get_prefix(message.guild.id)}annuler": #annuler dans un channel échange
+            await message.channel.send("Échange annulé.")
             if main.check_channels_echanges(message.channel.id):
               main.delete_channel_echange(message.channel.id)
               await message.channel.delete()
-            else:
-              main.delete_all_echanges(message.author.id)
+              
+        elif main.dresseur1(message.author.id,True) and not main.check_channels_echanges(message.channel.id) and message.content.startswith(f"{main.get_prefix(message.guild.id)}annuler ") and message.mentions: #annuler la proposition en mentionnant qqn
+          if main.check_channels_echanges(dresseur1=message.author.id,dresseur2=message.mentions[0].id):
+            await message.channel.send(f"Échange annulé.\n||<@{message.author.id}>||")
+            main.delete_channel_echange(dresseur1=message.author.id,dresseur2=message.mentions[0].id)
+              
+        elif (main.dresseur1(message.author.id) or (main.dresseur2(message.author.id,False) and main.check_channels_echanges(message.channel.id))) and message.content == f"{main.get_prefix(message.guild.id)}annulertout": #annuler toutes les propositions
+            await message.channel.send(f"Échanges annulés.\n||<@{message.author.id}>||")
+            main.delete_all_echanges(message.author.id,True) #True : ne supprime que les propositions, pas les échanges en cours
 
+        elif message.content == f"{main.get_prefix(message.guild.id)}echangetoggle":
+          await message.channel.send(main.echangetoggle(message.author.id))
+        
         elif message.content.startswith(f"{main.get_prefix(message.guild.id)}mokedex"):
           if not message.mentions:
             record,count = main.afficher_mots(str(message.author.id))
@@ -153,15 +179,18 @@ async def on_message(message):
         elif message.content.startswith(f"{main.get_prefix(message.guild.id)}echange "):
           try:
             if message.mentions[0].id != message.author.id:
-              main.proposer_echange(message.author.id,message.mentions[0].id,message.channel.id)
               if main.check_dresseur_existe(message.mentions[0].id):
+                if main.check_echange_ouvert(message.mentions[0].id):
+                  main.proposer_echange(message.author.id,message.mentions[0].id,message.channel.id)
                   await message.channel.send(
                       f"Le dresseur <@{message.author.id}> propose un **échange** avec le dresseur <@{message.mentions[0].id}> !\n\
   <@{message.mentions[0].id}>, utilisez les commandes `{main.get_prefix(message.guild.id)}accepter` ou `{main.get_prefix(message.guild.id)}refuser`. <@{message.author.id}>, utilisez la commande `{main.get_prefix(message.guild.id)}annuler` à tout moment pour annuler vos propositions d'échange en cours."
                   )
+                else:
+                  await message.channel.send(f"Désolé <@{message.author.id}>, ce dresseur n'accepte pas les propositions d'échange.")
               else:
                   await message.channel.send(
-                      f"Dresseur <@{message.mentions[0].id}> introuvable.")
+                      f"Dresseur `{message.mentions[0].name}` introuvable.\n||<@{message.author.id}>||")
           except IndexError:
             await message.channel.send(f"Dresseur '{message.content.split(' ')[1]}' introuvable.")
 

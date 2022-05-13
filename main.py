@@ -10,7 +10,7 @@ boosters_max=3
 try:
   sqliteConnection = sqlite3.connect('WordPacks.db')
   cursor = sqliteConnection.cursor()
-  cursor.execute(f"CREATE TABLE IF NOT EXISTS dresseurs ('ID' INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, 'nom' TEXT, 'cooldown' TEXT, 'boosters_dispo' INT, 'points' INT);")
+  cursor.execute(f"CREATE TABLE IF NOT EXISTS dresseurs ('ID' INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, 'nom' TEXT, 'cooldown' TEXT, 'boosters_dispo' INT, 'points' INT, 'echangetoggle' TEXT);")
   cursor.execute(f"CREATE TABLE IF NOT EXISTS mots ('nom' TEXT PRIMARY KEY, 'dresseur' INT, 'rarete' INT, 'requis' INT);")
   cursor.execute(f"CREATE TABLE IF NOT EXISTS echange ('ID' INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, 'nom' TEXT,'dresseur1' TEXT, 'dresseur2' TEXT, 'mot1' TEXT, 'mot2' TEXT, 'halfcomplete' INT, 'origine' TEXT)")
   cursor.execute(f"CREATE TABLE IF NOT EXISTS prefixes ('serveur' TEXT PRIMARY KEY,'prefix' TEXT)")
@@ -45,7 +45,7 @@ def simp(mot):
 #________________________________________________________________________
 
 def creer_dresseur(dresseur):
-    cursor.execute(f"INSERT INTO dresseurs (nom,cooldown,boosters_dispo,points) VALUES ('{dresseur}','{datetime.datetime.now()-datetime.timedelta(days=1)}',5,0)")
+    cursor.execute(f"INSERT INTO dresseurs (nom,cooldown,boosters_dispo,points,echangetoggle) VALUES ('{dresseur}','{datetime.datetime.now()-datetime.timedelta(days=1)}',5,0,'OUVERT')")
     sqliteConnection.commit()
     return
 
@@ -238,8 +238,11 @@ def creer_channel_echange(channel_echange,dresseur1,dresseur2):
   sqliteConnection.commit()
   return
 
-def delete_channel_echange(channel_echange):
-  cursor.execute(f"DELETE FROM echange WHERE nom='{channel_echange}'")
+def delete_channel_echange(channel_echange=None,dresseur1=None,dresseur2=None):
+  if dresseur1 and dresseur2:
+    cursor.execute(f"DELETE FROM echange WHERE dresseur1='{dresseur1}' AND dresseur2='{dresseur2}'")
+  else:
+    cursor.execute(f"DELETE FROM echange WHERE nom='{channel_echange}'")
   sqliteConnection.commit()
   return
 
@@ -266,8 +269,8 @@ def confirmer_mot(channel):
 
 #___________________________________________
 
-def dresseur1(dresseur):
-  cursor.execute(f"SELECT nom FROM echange WHERE dresseur1='{dresseur}'")
+def dresseur1(dresseur,vide=False):
+  cursor.execute(f"""SELECT nom FROM echange WHERE dresseur1='{dresseur}'{" AND nom=''" if vide else ""}""")
   return [i[0] for i in cursor.fetchall()]
 
 def dresseur2(dresseur,vide=True):
@@ -337,19 +340,31 @@ def ajouterscore(auteur, phrase):
   sqliteConnection.commit()
   return
 
-def check_channels_echanges(channel_id):
-  cursor.execute(f"SELECT nom FROM echange WHERE nom='{channel_id}'")
+def check_channels_echanges(channel_id=None,dresseur1=None,dresseur2=None):
+  if dresseur1 and dresseur2:
+    cursor.execute(f"SELECT nom FROM echange WHERE dresseur1='{dresseur1}' AND dresseur2='{dresseur2}'")
+  else:
+    cursor.execute(f"SELECT nom FROM echange WHERE nom='{channel_id}'")
   return([channel[0] for channel in cursor.fetchall()])
 
-def delete_all_echanges(dresseur,nombre=1): #suppr tous les échanges INITIES par ce dresseur
-  cursor.execute(f"DELETE FROM echange WHERE dresseur{nombre}='{dresseur}'")
+def delete_all_echanges(dresseur,nombre=1,vide=False): #suppr tous les échanges INITIES par ce dresseur
+  cursor.execute(f"""DELETE FROM echange WHERE dresseur{nombre}='{dresseur}'{" AND nom=''" if vide else ""}""")
   sqliteConnection.commit()
   return
 
 def mot_propose(dresseur,channel):
   cursor.execute(f"SELECT CASE dresseur1 WHEN '{dresseur}' THEN mot1 ELSE mot2 END FROM echange WHERE nom='{channel}'")
   return(cursor.fetchall()[0][0])
-  
+
+def echangetoggle(dresseur):
+  cursor.execute(f"UPDATE dresseurs SET echangetoggle= CASE WHEN echangetoggle='OUVERT' THEN 'FERME' ELSE 'OUVERT' END WHERE nom='{dresseur}'")
+  sqliteConnection.commit()
+  cursor.execute(f"SELECT echangetoggle FROM dresseurs WHERE nom='{dresseur}'")
+  return(f"<@{dresseur}>, vos échanges sont maintenants **{cursor.fetchall()[0][0].replace('OUVERT','ouverts').replace('FERME','fermés')}**.")
+
+def check_echange_ouvert(dresseur):
+  cursor.execute(f"SELECT echangetoggle FROM dresseurs WHERE nom='{dresseur}'")
+  return(cursor.fetchall()[0][0])
 
 def close_db(): #en cas de problème
   sqliteConnection.close()
