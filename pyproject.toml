@@ -11,6 +11,7 @@ python-dotenv = "^0.20.0"
 discord = "^1.7.3"
 bs4 = "^0.0.1"
 waitress = "^2.1.1"
+python-randomword-fr = "^1.0.0"
 
 [tool.poetry.dev-dependencies]
 

@@ -1,4 +1,10 @@
-import requests,sqlite3
+import sqlite3,random#,requests
+list_fr = open('list_fr.txt').read().splitlines()
+"""from randomwordfr import RandomWordFr
+
+rw=RandomWordFr()
+for i in range(100):
+  print(rw.get()['word'].lower())"""
 #from bs4 import BeautifulSoup
 import datetime
 
@@ -58,13 +64,14 @@ def ouverture_booster(dresseur,nb=1):
   sqliteConnection.commit()
   cursor.execute(f"SELECT boosters_dispo from dresseurs WHERE nom='{dresseur}'")
   boosters_restants=cursor.fetchall()[0][0]
-  global taille_booster
+  global taille_booster,list_fr
+  """
   code = requests.get(f'https://www.palabrasaleatorias.com/mots-aleatoires.php?fs={nb*taille_booster}&fs2=0&Submit=Nouveau+mot', timeout=(3.05,1))
   #else: code = requests.get('https://www.textfixerfr.com/outils/generateur-de-mots-aleatoires.php') faut trouver un moyen de faire marcher ça
   #else: code = requests.get('http://romainvaleri.online.fr/' ça aussi
   lines=list(code.iter_lines())
-  liste=[simp(lines[87+i*6].decode("utf-8")) for i in range(nb*taille_booster)]
-  return(capturer_mots(liste,dresseur),boosters_restants)
+  liste=[simp(lines[87+i*6].decode("utf-8")) for i in range(nb*taille_booster)]"""
+  return(capturer_mots(random.sample(list_fr,nb*taille_booster),dresseur),boosters_restants)
 
 #________________________________________________________________________ CODE A GARDER SI JAMAIS ON RETOURNE A  "lines[112+i*6].decode("utf-8")" MAIS SINON TRQL :
 #if simp(lines[112+i*6].decode("utf-8"))!='br div stylefont-sizeem colorc' and not all([bug in simp(lines[112+i*6].decode("utf-8")) for bug in ['value','option']]) else simp(lines[87+i*6].decode("utf-8")) if all([bug in simp(lines[112+i*6].decode("utf-8")) for bug in ['value','option']]) else simp(lines[113+i*6].decode("utf-8"))
