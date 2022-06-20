@@ -337,7 +337,7 @@ def classement(dresseur):
 #___________________________________________
 
 def cheatpoints(dresseur):
-  cursor.execute(f"UPDATE dresseurs SET points=points+50 WHERE nom='{dresseur}'")
+  cursor.execute(f"UPDATE dresseurs SET boosters_dispo=boosters_dispo+50 WHERE nom='{dresseur}'")
   sqliteConnection.commit()
   return("ggwp")
 
@@ -374,6 +374,13 @@ def echangetoggle(dresseur):
 def check_echange_ouvert(dresseur):
   cursor.execute(f"SELECT echangetoggle FROM dresseurs WHERE nom='{dresseur}'")
   return({'FERME':False,'OUVERT':True}[cursor.fetchall()[0][0]])
+
+def check_mot_existe(mot):
+  with open('list_fr.txt') as file:
+    contents = file.read()
+    if mot.lower() in contents.lower():
+        return(f":white_check_mark: Le mot '{mot}' est disponible dans les boosters.")
+    return(f":x: Le mot '{mot}' n'est pas disponible dans les boosters.")
 
 def close_db(): #en cas de problème
   sqliteConnection.close()

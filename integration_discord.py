@@ -50,12 +50,13 @@ Allez, il ne vous reste plus qu'à utiliser la commande `!kukujariv` pour début
 `{main.get_prefix(message.guild.id)}help` - afficher cette page\n\
 `{main.get_prefix(message.guild.id)}wordpacksprefix` [prefix] - changer le prefix des commandes du bot WordPacks (`!` par défaut). Cette commande fonctionnera toujours avec `!wordpacksprefix` afin de pouvoir corriger d'éventuels changements accidentels. La taille maximale d'un prefix est de 5 caractères.\n\n\
 <a:dresseur:958663675374370836> _Commandes relatives aux dresseurs_\n\n\
-`{main.get_prefix(message.guild.id)}kukujariv` - s'inscrire en tant que dresseur.\n\
+`{main.get_prefix(message.guild.id)}kukujariv` / `{main.get_prefix(message.guild.id)}inscription` - s'inscrire en tant que dresseur.\n\
 `{main.get_prefix(message.guild.id)}info <dresseur>` - afficher diverses informations sur votre profil de dresseur. Il est possible d'afficher la carte d'infos d'un autre dresseur en le mentionnant.\n\
 `{main.get_prefix(message.guild.id)}classement` - afficher le classement des 10 meilleurs dresseurs, ainsi que votre position actuelle.\n\
 `{main.get_prefix(message.guild.id)}quitter` - supprimer votre profil de dresseur ainsi que tous vos mots, **définitivement**. Une confirmation vous sera demandée.\n\n\
 <a:mokeball:958666482894643200> _Commandes relatives aux mots_\n\n\
 `{main.get_prefix(message.guild.id)}mokedex <dresseur>` - afficher les mots que vous possédez, ainsi que leur rareté. Les mots sont triés par rareté. Il est possible d'afficher le mokédex d'un autre dresseur en le mentionnant.\n\
+`{main.get_prefix(message.guild.id)}existe [mot]` / `{main.get_prefix(message.guild.id)}peutonpaké [mot]`- vérifier si un mot est obtenable dans un booster.\n\
 `{main.get_prefix(message.guild.id)}recherche [mot] <dresseur>` - vérifier si vous possédez un mot. Il est possible de faire une recherche dans le mokédex d'un autre dresseur en le mentionnant.\n\
 `{main.get_prefix(message.guild.id)}booster` - ouvrir un booster de 3 mots ! Vous obtenez 3 boosters toutes les 12 heures.\n\
 `{main.get_prefix(message.guild.id)}megabooster` - ouvrir 3 boosters de 3 mots, pour 9 mots **SANS DOUBLONS** !\n\
@@ -80,7 +81,7 @@ Allez, il ne vous reste plus qu'à utiliser la commande `!kukujariv` pour début
         except IndexError:
           await message.channel.send(f"Veuillez entrez un prefix valide.")
     elif not main.check_dresseur_existe(
-            message.author.id) and message.content == f"{main.get_prefix(message.guild.id)}kukujariv":
+            message.author.id) and (message.content == f"{main.get_prefix(message.guild.id)}kukujariv" or message.content == f"{main.get_prefix(message.guild.id)}inscription"):
         main.creer_dresseur(str(message.author.id))
         await message.channel.send(
             f"Dresseur <@{message.author.id}> créé ! Voici **5** boosters pour commencer. Utilisez `{main.get_prefix(message.guild.id)}booster` pour en ouvrir un ou `{main.get_prefix(message.guild.id)}help` pour afficher toutes les commandes ! Attrapez les tous !"
@@ -240,6 +241,9 @@ Allez, il ne vous reste plus qu'à utiliser la commande `!kukujariv` pour début
             suppression.append(message.author.id)
             await message.channel.send(f"<@{message.author.id}>, entrez `confirmer` pour confirmer la suppression de votre profil de dresseur, ou `annuler` pour annuler la suppression.")
 
+        elif (message.content.startswith(f"{main.get_prefix(message.guild.id)}existe ") or message.content.startswith(f"{main.get_prefix(message.guild.id)}peutonpaké "))and message.content.split(" ")[1]:
+          await message.channel.send(main.check_mot_existe(message.content.split(" ")[1]))
+        
         elif message.content == "confirmer" and message.author.id in suppression:
             suppression.pop(suppression.index(message.author.id))
             await message.channel.send(main.suppression_dresseur(message.author.id))
