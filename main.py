@@ -98,7 +98,7 @@ def capturer_mots(mots,dresseur):
 
     id_dresseur=record[0][0]
     mots_upgrade,mots_final=[],[]
-    for mot_capture in mots:
+    for mot_capture in [mot.lower() for mot in mots]:
         try:
             cursor.execute(f"INSERT INTO mots (nom,dresseur,rarete,requis) VALUES ('{mot_capture.split(' ',1)[0]}','{id_dresseur}',1,1)")
             mots_final.append(mot_capture)
@@ -129,7 +129,7 @@ def afficher_mots(dresseur):
 def check_mot(mot,dresseur):
     cursor.execute(f"select ID from dresseurs WHERE nom='{dresseur}'")
     record = cursor.fetchall()
-    cursor.execute(f"select nom,rarete,requis from mots WHERE nom='{mot}' and dresseur='{record[0][0]}'")
+    cursor.execute(f"select nom,rarete,requis from mots WHERE nom='{mot.lower()}' and dresseur='{record[0][0]}'")
     try:return(list(cursor.fetchall()[0]))
     except IndexError: return("")
 
@@ -260,9 +260,9 @@ def delete_channel_echange(channel_echange=None,dresseur1=None,dresseur2=None):
 def changer_mot(channel,dresseur,mot):
   cursor.execute(f"SELECT * FROM echange WHERE nom='{channel}'")
   record=list(cursor.fetchall()[0])
-  cursor.execute(f"UPDATE echange SET mot{record.index(str(dresseur))-1}='{mot}' WHERE dresseur{record.index(str(dresseur))-1}='{dresseur}' AND nom='{channel}'")
+  cursor.execute(f"UPDATE echange SET mot{record.index(str(dresseur))-1}='{mot.lower()}' WHERE dresseur{record.index(str(dresseur))-1}='{dresseur}' AND nom='{channel}'")
   sqliteConnection.commit()
-  cursor.execute(f"SELECT rarete FROM mots WHERE nom='{mot}'")
+  cursor.execute(f"SELECT rarete FROM mots WHERE nom='{mot.lower()}'")
   return cursor.fetchall()[0][0]
 
 #___________________________________________
@@ -380,7 +380,7 @@ def check_mot_existe(mot):
     contents = file.read()
     if mot.lower() in contents.lower():
         return(f":white_check_mark: Le mot '{mot}' est disponible dans les boosters.")
-    return(f":x: Le mot '{mot}' n'est pas disponible dans les boosters.")
+    return(f":x: Le mot '{mot.lower()}' n'est pas disponible dans les boosters.")
 
 def close_db(): #en cas de problème
   sqliteConnection.close()

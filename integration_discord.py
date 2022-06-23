@@ -232,10 +232,10 @@ Allez, il ne vous reste plus qu'à utiliser la commande `!kukujariv` pour début
 
         elif main.check_channels_echanges(message.channel.id):
             if not main.check_mot(message.content, message.author.id):
-                await message.channel.send(f"Le dresseur <@{message.author.id}> ne possède pas le mot '{message.content}'. Veuillez rééssayer.")
+                await message.channel.send(f"Le dresseur <@{message.author.id}> ne possède pas le mot '{message.content.lower()}'. Veuillez rééssayer.")
             else:
                 
-                await message.channel.send(f"Le dresseur <@{message.author.id}> propose le mot '{message.content}' (rareté : `{main.changer_mot(message.channel.id,message.author.id,message.content)}`) pour l'échange !")
+                await message.channel.send(f"Le dresseur <@{message.author.id}> propose le mot '{message.content.lower()}' (rareté : `{main.changer_mot(message.channel.id,message.author.id,message.content)}`) pour l'échange !")
 
         elif message.content == f"{main.get_prefix(message.guild.id)}quitter":
             suppression.append(message.author.id)
