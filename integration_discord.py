@@ -69,8 +69,12 @@ Allez, il ne vous reste plus qu'à utiliser la commande `!kukujariv` pour début
 `{main.get_prefix(message.guild.id)}annuler <dresseur>` (en dehors d'un channel d'échange) - annuler la proposition d'échange faite à un dresseur.\n\
 `{main.get_prefix(message.guild.id)}annuler` (dans un channel d'échange) - annuler l'échange en cours et supprimer le channel temporaire.\n\
 `{main.get_prefix(message.guild.id)}annulertout` - annuler toutes les propositions d'échange que vous avez faites. Ceci n'annulera pas d'éventuels échanges en cours.\n\
-`{main.get_prefix(message.guild.id)}confirmer` (dans un channel d'échange) - compléter l'échange.")
-    if message.content.startswith("!wordpacksprefix ") or message.content.startswith(f"{main.get_prefix(message.guild.id)}wordpacksprefix "):
+`{main.get_prefix(message.guild.id)}confirmer` (dans un channel d'échange) - compléter l'échange.\n\n\
+:computer: _Commandes diverses_\n\n\
+`{main.get_prefix(message.guild.id)}listemots` - afficher la liste des mots obtenables dans un booster.")
+    elif message.content=="!wordpacksaddserver":
+      main.ajouter_serveur(message.guild.id)
+    elif message.content.startswith("!wordpacksprefix ") or message.content.startswith(f"{main.get_prefix(message.guild.id)}wordpacksprefix "):
       if message.mentions:
         await message.channel.send("Veuillez entrer un prefix valide.")
       elif len(message.content.split(" ")[1])<5:
@@ -260,9 +264,12 @@ Allez, il ne vous reste plus qu'à utiliser la commande `!kukujariv` pour début
           stats,classement=main.classement(message.author.id,message.guild.id)
           newline='\n'
           await message.channel.send(f"<a:mokeball:958666482894643200>`CLASSEMENT DES DRESSEURS`<a:mokeball:958666482894643200>{newline*2}{newline.join([f'{numbers[i]} <@{classement[i][1]}> : {classement[i][2]}pts - {classement[i][3]} mots' for i in range(len(classement))])}{newline*2}`{stats[3]}` <@{message.author.id}> (Vous) : {stats[1]}pts - {stats[2]} mots")
+          
         elif message.content == (f"{main.get_prefix(message.guild.id)}hauthautbasbasgauchedroitegauchedroiteBAstart"):
           await message.channel.send(main.cheatpoints(message.author.id,message.guild.id))
-
+          
+        elif message.content == (f"{main.get_prefix(message.guild.id)}listemots"):
+          await message.channel.send(file=discord.File('list_fr.txt'))
     if message.content:
       main.ajouterscore(message.author.id,message.guild.id, message.content)
 
