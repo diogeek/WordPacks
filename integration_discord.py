@@ -87,6 +87,8 @@ Allez, il ne vous reste plus qu'à utiliser la commande `!kukujariv` pour début
         await message.channel.send(
             f"Dresseur <@{message.author.id}> créé ! Voici **5** boosters pour commencer. Utilisez `{main.get_prefix(message.guild.id)}booster` pour en ouvrir un ou `{main.get_prefix(message.guild.id)}help` pour afficher toutes les commandes ! Attrapez les tous !"
         )
+    elif message.content == (f"{main.get_prefix(message.guild.id)}listemots"):
+        await message.channel.send("**Voici la liste des mots disponibles dans les packs :**", file=discord.File('list_fr.txt','liste_des_mots_disponibles.txt'))
     elif main.check_dresseur_existe(message.author.id,message.guild.id):
         if message.content.startswith(f"{main.get_prefix(message.guild.id)}accepter ") and not main.check_channels_echanges(message.guild.id,message.channel.id) and message.mentions: #accepter la demande en mentionnant qqn
           if main.check_dresseur_existe(message.mentions[0].id,message.guild.id):
@@ -267,9 +269,6 @@ Allez, il ne vous reste plus qu'à utiliser la commande `!kukujariv` pour début
           
         elif message.content == (f"{main.get_prefix(message.guild.id)}hauthautbasbasgauchedroitegauchedroiteBAstart"):
           await message.channel.send(main.cheatpoints(message.author.id,message.guild.id))
-          
-        elif message.content == (f"{main.get_prefix(message.guild.id)}listemots"):
-          await message.channel.send(file=discord.File('list_fr.txt'))
     if message.content:
       main.ajouterscore(message.author.id,message.guild.id, message.content)
 
