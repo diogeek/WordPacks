@@ -245,7 +245,7 @@ Allez, il ne vous reste plus qu'à utiliser la commande `!kukujariv` pour début
                 await message.channel.send(f"Le dresseur <@{message.author.id}> propose le mot '{message.content.lower()}' (rareté : `{main.changer_mot(message.channel.id,message.author.id,message.guild.id,message.content)}`) pour l'échange !")
 
         elif message.content == f"{main.get_prefix(message.guild.id)}quitter":
-            await message.channel.send(f"<@{message.author.id}>, entrez `!confirmersuppression` afin de confirmer la suppression de votre profil de dresseur.")
+            await message.channel.send(f"<@{message.author.id}>, entrez `{main.get_prefix(message.guild.id)}confirmersuppression` afin de confirmer la suppression de votre profil de dresseur.")
 
         elif (message.content.startswith(f"{main.get_prefix(message.guild.id)}existe ") or message.content.startswith(f"{main.get_prefix(message.guild.id)}peutonpaké "))and message.content.split(" ")[1]:
           await message.channel.send(main.check_mot_existe(message.content.split(" ")[1]))
