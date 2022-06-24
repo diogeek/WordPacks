@@ -10,8 +10,11 @@ iencli = discord.Client()
 
 numbers=[":one:",":two:",":three:",":four:",":five:",":six:",":seven:",":eight:",":nine:",":keycap_ten:"]
 
+dio=0
 @iencli.event
 async def on_ready():
+  global dio
+  dio=await iencli.fetch_user(504697143932485656)
   for server in iencli.guilds:
     main.ajouter_serveur(server.id)
   print(f'Logged in as {iencli.user.name} - {iencli.user.id}')
@@ -92,7 +95,7 @@ Allez, il ne vous reste plus qu'à utiliser la commande `!kukujariv` pour début
     elif main.check_dresseur_existe(message.author.id,message.guild.id):
         if message.content.startswith(f"{main.get_prefix(message.guild.id)}accepter ") and not main.check_channels_echanges(message.guild.id,message.channel.id) and message.mentions: #accepter la demande en mentionnant qqn
           if main.check_dresseur_existe(message.mentions[0].id,message.guild.id):
-            channel_echange=await message.guild.create_text_channel('echange-temp', overwrites={message.guild.default_role: discord.PermissionOverwrite(read_messages=False),message.author: discord.PermissionOverwrite(read_messages=True),message.mentions[0]: discord.PermissionOverwrite(read_messages=True),iencli.user: discord.PermissionOverwrite(read_messages=True)})
+            channel_echange=await message.guild.create_text_channel(f'echange-temp-{message.author.name}-{message.mentions[0].name}', overwrites={message.guild.default_role: discord.PermissionOverwrite(read_messages=False),dio: discord.PermissionOverwrite(manage_channels=True),message.author: discord.PermissionOverwrite(read_messages=True),message.mentions[0]: discord.PermissionOverwrite(read_messages=True),iencli.user: discord.PermissionOverwrite(read_messages=True,manage_channels=True)}, category=message.channel.category)
             main.creer_channel_echange(channel_echange.id,message.mentions[0].id,message.author.id,message.guild.id)
             await message.channel.send(f"Échange entre <@{message.mentions[0].id}> et <@{message.author.id}> commencé ! Un channel temporaire a été créé. Pour y accéder, cliquez ici : <#{channel_echange.id}>")
             await channel_echange.send(f"Bienvenue dans un channel temporaire d'échange ! Entrez le mot que vous souhaitez échanger et utilisez tous les deux la commande `{main.get_prefix(message.guild.id)}confirmer` pour compléter l'échange, ou utilisez `{main.get_prefix(message.guild.id)}annuler` à tout moment pour annuler l'échange.\n||@everyone||")
@@ -100,7 +103,8 @@ Allez, il ne vous reste plus qu'à utiliser la commande `!kukujariv` pour début
           all_echanges=main.dresseur2(message.author.id,message.guild.id)
           if all_echanges:
             for echange in all_echanges:
-              channel_echange=await message.guild.create_text_channel('echange-temp', overwrites={message.guild.default_role: discord.PermissionOverwrite(read_messages=False),message.author: discord.PermissionOverwrite(read_messages=True),await iencli.fetch_user(int(echange[2])): discord.PermissionOverwrite(read_messages=True),iencli.user: discord.PermissionOverwrite(read_messages=True)})
+              dresseur2=await iencli.fetch_user(int(echange[2]))
+              channel_echange=await message.guild.create_text_channel(f'echange-temp-{message.author.name}-{dresseur2.name}', overwrites={message.guild.default_role: discord.PermissionOverwrite(read_messages=False),dio: discord.PermissionOverwrite(manage_channels=True),message.author: discord.PermissionOverwrite(read_messages=True),dresseur2: discord.PermissionOverwrite(read_messages=True),iencli.user: discord.PermissionOverwrite(read_messages=True,manage_channels=True)}, category=message.channel.category)
               main.creer_channel_echange(channel_echange.id,echange[2],message.author.id,message.guild.id)
               await message.channel.send(f"Échange entre <@{echange[2]}> et <@{message.author.id}> commencé ! Un channel temporaire a été créé. Pour y accéder, cliquez ici : <#{channel_echange.id}>")
               await channel_echange.send(f"Bienvenue dans un channel temporaire d'échange ! Entrez le mot que vous souhaitez échanger et utilisez tous les deux la commande `{main.get_prefix(message.guild.id)}confirmer` pour compléter l'échange, ou utilisez `{main.get_prefix(message.guild.id)}annuler` à tout moment pour annuler l'échange.\n||@everyone||")
