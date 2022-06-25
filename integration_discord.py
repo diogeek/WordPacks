@@ -73,7 +73,7 @@ Allez, il ne vous reste plus qu'à utiliser la commande `!kukujariv` pour début
         commande=message.content.split(" ")[1].lower().replace("kukujariv","inscription").replace("existe","peutonpaké")
         if commande in commandes:
           commande=commandes[commande]
-          await message.reply(''.join([f"""**Commande** `{'` / `'.join([main.get_prefix(message.guild.id)+titre for titre in titres])}`:\n\n{info}\n\n""" for titres,info in zip(commande[0::2], commande[1::2])])+f"||<@{message.author.id}>||")
+          await message.reply('\n\n'.join([f"""**Commande** `{'` / `'.join([main.get_prefix(message.guild.id)+titre for titre in titres])}`:\n{info}""" for titres,info in zip(commande[0::2], commande[1::2])]))
       except IndexError:
         await message.reply(f"**Commandes du bot Wordpacks**\n\n\
 `{main.get_prefix(message.guild.id)}intro` **-** Wordpacks c'est quoi ?\n\
