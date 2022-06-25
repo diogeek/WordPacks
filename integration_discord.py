@@ -69,42 +69,43 @@ __**Informations supplémentaires**__\n\
  - Le bot est sûrement rempli de bugs. Si vous en croisez un, mettez un masque et merci d'en parler à <@504697143932485656>, son créateur ! <a:dresseur:958663675374370836>\n\n\
 Allez, il ne vous reste plus qu'à utiliser la commande `!kukujariv` pour débuter votre aventure de dresseur Wordpacks !")
     elif message.content.startswith(f"{main.get_prefix(message.guild.id)}help"):
+      prefix=main.get_prefix(message.guild.id)
       try:
         commande=message.content.split(" ")[1].lower().replace("kukujariv","inscription").replace("existe","peutonpaké")
         if commande in commandes:
           commande=commandes[commande]
-          await message.reply('\n\n'.join([f"""**Commande** `{'` / `'.join([main.get_prefix(message.guild.id)+titre for titre in titres])}`:\n{info}""" for titres,info in zip(commande[0::2], commande[1::2])]))
+          await message.reply('\n\n'.join([f"""**Commande** `{'` / `'.join([prefix+titre for titre in titres])}`:\n{info}""" for titres,info in zip(commande[0::2], commande[1::2])]))
       except IndexError:
         await message.reply(f"**Commandes du bot Wordpacks**\n\n\
-`{main.get_prefix(message.guild.id)}intro` **-** Wordpacks c'est quoi ?\n\
-`{main.get_prefix(message.guild.id)}help` **-** afficher cette page. Il est possible d'utiliser `{main.get_prefix(message.guild.id)}help <commande>` pour afficher la description d'une commande.\n\
-`{main.get_prefix(message.guild.id)}wordpacksprefix [prefix]` **-** changer le prefix des commandes du bot WordPacks (`!` par défaut). Cette commande fonctionnera toujours avec `!wordpacksprefix` afin de pouvoir corriger d'éventuels changements accidentels. La taille maximale d'un prefix est de 5 caractères.\n\n\
+`{prefix}intro` **-** Wordpacks c'est quoi ?\n\
+`{prefix}help` **-** afficher cette page. Il est possible d'utiliser `{prefix}help <commande>` pour afficher la description d'une commande.\n\
+`{prefix}wordpacksprefix [prefix]` **-** changer le prefix des commandes du bot WordPacks (`!` par défaut). Cette commande fonctionnera toujours avec `!wordpacksprefix` afin de pouvoir corriger d'éventuels changements accidentels. La taille maximale d'un prefix est de 5 caractères.\n\n\
 <a:dresseur:958663675374370836> _Commandes relatives aux dresseurs_\n\n\
-`{main.get_prefix(message.guild.id)}kukujariv` / `{main.get_prefix(message.guild.id)}inscription` **-** s'inscrire en tant que dresseur.\n\
-`{main.get_prefix(message.guild.id)}info <dresseur>` **-** afficher diverses informations sur votre profil de dresseur. Il est possible d'afficher la carte d'infos d'un autre dresseur en le mentionnant.\n\
-`{main.get_prefix(message.guild.id)}classement` **-** afficher le classement des 10 meilleurs dresseurs, ainsi que votre position actuelle.\n\
-`{main.get_prefix(message.guild.id)}quitter` **-** supprimer votre profil de dresseur ainsi que tous vos mots, **définitivement**. Une confirmation vous sera demandée.\n\n\
+`{prefix}kukujariv` / `{prefix}inscription` **-** s'inscrire en tant que dresseur.\n\
+`{prefix}info <dresseur>` **-** afficher diverses informations sur votre profil de dresseur. Il est possible d'afficher la carte d'infos d'un autre dresseur en le mentionnant.\n\
+`{prefix}classement` **-** afficher le classement des 10 meilleurs dresseurs, ainsi que votre position actuelle.\n\
+`{prefix}quitter` **-** supprimer votre profil de dresseur ainsi que tous vos mots, **définitivement**. Une confirmation vous sera demandée.\n\n\
 <a:mokeball:958666482894643200> _Commandes relatives aux mots_\n\n\
-`{main.get_prefix(message.guild.id)}mokedex <dresseur>` **-** afficher les mots que vous possédez, ainsi que leur rareté. Les mots sont triés par rareté. Il est possible d'afficher le mokédex d'un autre dresseur en le mentionnant.\n\
-`{main.get_prefix(message.guild.id)}existe [mot]` / `{main.get_prefix(message.guild.id)}peutonpaké [mot]` **-** vérifier si un mot est obtenable dans un booster.\n\
-`{main.get_prefix(message.guild.id)}recherche [mot] <dresseur>` **-** vérifier si vous possédez un mot. Il est possible d'effectuer une recherche dans le mokédex d'un autre dresseur en le mentionnant.\n\
-`{main.get_prefix(message.guild.id)}booster` **-** ouvrir un booster de 3 mots ! Vous obtenez 3 boosters toutes les 12 heures.\n\
-`{main.get_prefix(message.guild.id)}megabooster` **-** ouvrir 3 boosters de 3 mots, pour 9 mots **SANS DOUBLONS** !\n\
-`{main.get_prefix(message.guild.id)}upgrade <nombre>` **-** sacrifier des boosters (1 de base) pour augmenter la rareté de 2 mots aléatoires de votre mokédex par booster sacrifié.\n\
-`{main.get_prefix(message.guild.id)}echange [dresseur]` **-** proposer un échange avec un dresseur.")
+`{prefix}mokedex <dresseur>` **-** afficher les mots que vous possédez, ainsi que leur rareté. Les mots sont triés par rareté. Il est possible d'afficher le mokédex d'un autre dresseur en le mentionnant.\n\
+`{prefix}existe [mot]` / `{prefix}peutonpaké [mot]` **-** vérifier si un mot est obtenable dans un booster.\n\
+`{prefix}recherche [mot] <dresseur>` **-** vérifier si vous possédez un mot. Il est possible d'effectuer une recherche dans le mokédex d'un autre dresseur en le mentionnant.\n\
+`{prefix}booster` **-** ouvrir un booster de 3 mots ! Vous obtenez 3 boosters toutes les 12 heures.\n\
+`{prefix}megabooster` **-** ouvrir 3 boosters de 3 mots, pour 9 mots **SANS DOUBLONS** !\n\
+`{prefix}upgrade <nombre>` **-** sacrifier des boosters (1 de base) pour augmenter la rareté de 2 mots aléatoires de votre mokédex par booster sacrifié.\n\
+`{prefix}echange [dresseur]` **-** proposer un échange avec un dresseur.")
         await message.reply(f"<:trade:958666805889601576> _Commandes relatives à l'échange_\n\n\
-`{main.get_prefix(message.guild.id)}echangetoggle` **-** activer/désactiver la possibilité pour les dresseurs de vous proposer des échanges.\n\
-`{main.get_prefix(message.guild.id)}accepter [dresseur]` **-** accepter la proposition d'échange d'un dresseur et créer un channel d'échange temporaire.\n\
-`{main.get_prefix(message.guild.id)}acceptertout` **-** accepter **toutes** les propositions d'échange et créer un channel d'échange temporaire pour chacune d'entre elles.\n\
-`{main.get_prefix(message.guild.id)}refuser [dresseur]` **-** refuser la proposition d'échange d'un dresseur.\n\
-`{main.get_prefix(message.guild.id)}refusertout` **-** refuser **toutes** les propositions d'échange que l'on vous a fait.\n\
-`{main.get_prefix(message.guild.id)}annuler [dresseur]` **-** (en dehors d'un channel d'échange) annuler la proposition d'échange faite à un dresseur.\n\
-`{main.get_prefix(message.guild.id)}annuler` **-** (dans un channel d'échange) annuler l'échange en cours et supprimer le channel temporaire.\n\
-`{main.get_prefix(message.guild.id)}annulertout` **-** annuler toutes les propositions d'échange que vous avez faites. Ceci n'annulera pas d'éventuels échanges en cours.\n\
-`{main.get_prefix(message.guild.id)}confirmer` **-** (dans un channel d'échange) compléter l'échange.\n\n\
+`{prefix}echangetoggle` **-** activer/désactiver la possibilité pour les dresseurs de vous proposer des échanges.\n\
+`{prefix}accepter [dresseur]` **-** accepter la proposition d'échange d'un dresseur et créer un channel d'échange temporaire.\n\
+`{prefix}acceptertout` **-** accepter **toutes** les propositions d'échange et créer un channel d'échange temporaire pour chacune d'entre elles.\n\
+`{prefix}refuser [dresseur]` **-** refuser la proposition d'échange d'un dresseur.\n\
+`{prefix}refusertout` **-** refuser **toutes** les propositions d'échange que l'on vous a fait.\n\
+`{prefix}annuler [dresseur]` **-** (en dehors d'un channel d'échange) annuler la proposition d'échange faite à un dresseur.\n\
+`{prefix}annuler` **-** (dans un channel d'échange) annuler l'échange en cours et supprimer le channel temporaire.\n\
+`{prefix}annulertout` **-** annuler toutes les propositions d'échange que vous avez faites. Ceci n'annulera pas d'éventuels échanges en cours.\n\
+`{prefix}confirmer` **-** (dans un channel d'échange) compléter l'échange.\n\n\
 :computer: _Commandes diverses_\n\n\
-`{main.get_prefix(message.guild.id)}listemots` **-** afficher la liste des mots obtenables dans un booster.\n\n\
-_Légende_ : `{main.get_prefix(message.guild.id)}commande [élement nécessaire] <élement facultatif>` **-** description de la commande")
+`{prefix}listemots` **-** afficher la liste des mots obtenables dans un booster.\n\n\
+_Légende_ : `{prefix}commande [élement nécessaire] <élement facultatif>` **-** description de la commande")
     elif message.content=="!wordpacksaddserver":
       main.ajouter_serveur(message.guild.id)
     elif message.content.startswith("!wordpacksprefix ") or message.content.startswith(f"{main.get_prefix(message.guild.id)}wordpacksprefix "):
@@ -117,8 +118,9 @@ _Légende_ : `{main.get_prefix(message.guild.id)}commande [élement nécessaire]
           await message.reply(f"Veuillez entrez un prefix valide.")
     elif not main.check_dresseur_existe(message.author.id,message.guild.id) and (message.content == f"{main.get_prefix(message.guild.id)}kukujariv" or message.content == f"{main.get_prefix(message.guild.id)}inscription"):
         main.creer_dresseur(str(message.author.id),message.guild.id)
+        prefix=main.get_prefix(message.guild.id)
         await message.reply(
-            f"Dresseur <@{message.author.id}> créé ! Voici **5** boosters pour commencer. Utilisez `{main.get_prefix(message.guild.id)}booster` pour en ouvrir un ou `{main.get_prefix(message.guild.id)}help` pour afficher toutes les commandes ! Attrapez les tous !"
+            f"Dresseur <@{message.author.id}> créé ! Voici **5** boosters pour commencer. Utilisez `{prefix}booster` pour en ouvrir un ou `{prefix}help` pour afficher toutes les commandes ! Attrapez les tous !"
         )
     elif message.content == (f"{main.get_prefix(message.guild.id)}listemots"):
         await message.reply("**Voici la liste des mots disponibles dans les packs :**", file=discord.File('list_fr.txt','liste_des_mots_disponibles.txt'))
@@ -128,7 +130,8 @@ _Légende_ : `{main.get_prefix(message.guild.id)}commande [élement nécessaire]
             channel_echange=await message.guild.create_text_channel(f'echange-temp-{message.author.name}-{message.mentions[0].name}', overwrites={message.guild.default_role: discord.PermissionOverwrite(read_messages=False),dio: discord.PermissionOverwrite(manage_channels=True),message.author: discord.PermissionOverwrite(read_messages=True),message.mentions[0]: discord.PermissionOverwrite(read_messages=True),iencli.user: discord.PermissionOverwrite(read_messages=True,manage_channels=True)}, category=message.channel.category)
             main.creer_channel_echange(channel_echange.id,message.mentions[0].id,message.author.id,message.guild.id)
             await message.reply(f"Échange entre <@{message.mentions[0].id}> et <@{message.author.id}> commencé ! Un channel temporaire a été créé. Pour y accéder, cliquez ici : <#{channel_echange.id}>")
-            await channel_echange.send(f"Bienvenue dans un channel temporaire d'échange ! Entrez le mot que vous souhaitez échanger et utilisez tous les deux la commande `{main.get_prefix(message.guild.id)}confirmer` pour compléter l'échange, ou utilisez `{main.get_prefix(message.guild.id)}annuler` à tout moment pour annuler l'échange.\n||@everyone||")
+            prefix=main.get_prefix(message.guild.id)
+            await channel_echange.send(f"Bienvenue dans un channel temporaire d'échange ! Entrez le mot que vous souhaitez échanger et utilisez tous les deux la commande `{prefix}confirmer` pour compléter l'échange, ou utilisez `{prefix}annuler` à tout moment pour annuler l'échange.\n||@everyone||")
         elif message.content == f"{main.get_prefix(message.guild.id)}acceptertout" and not main.check_channels_echanges(message.channel.id): #accepter toutes les demandes
           all_echanges=main.dresseur2(message.author.id,message.guild.id)
           if all_echanges:
@@ -137,7 +140,8 @@ _Légende_ : `{main.get_prefix(message.guild.id)}commande [élement nécessaire]
               channel_echange=await message.guild.create_text_channel(f'echange-temp-{message.author.name}-{dresseur2.name}', overwrites={message.guild.default_role: discord.PermissionOverwrite(read_messages=False),dio: discord.PermissionOverwrite(manage_channels=True),message.author: discord.PermissionOverwrite(read_messages=True),dresseur2: discord.PermissionOverwrite(read_messages=True),iencli.user: discord.PermissionOverwrite(read_messages=True,manage_channels=True)}, category=message.channel.category)
               main.creer_channel_echange(channel_echange.id,echange[2],message.author.id,message.guild.id)
               await message.reply(f"Échange entre <@{echange[2]}> et <@{message.author.id}> commencé ! Un channel temporaire a été créé. Pour y accéder, cliquez ici : <#{channel_echange.id}>")
-              await channel_echange.send(f"Bienvenue dans un channel temporaire d'échange ! Entrez le mot que vous souhaitez échanger et utilisez tous les deux la commande `{main.get_prefix(message.guild.id)}confirmer` pour compléter l'échange, ou utilisez `{main.get_prefix(message.guild.id)}annuler` à tout moment pour annuler l'échange.\n||@everyone||")
+              prefix=main.get_prefix(message.guild.id)
+              await channel_echange.send(f"Bienvenue dans un channel temporaire d'échange ! Entrez le mot que vous souhaitez échanger et utilisez tous les deux la commande `{prefix}confirmer` pour compléter l'échange, ou utilisez `{prefix}annuler` à tout moment pour annuler l'échange.\n||@everyone||")
 
         elif main.dresseur2(message.author.id,message.guild.id) and message.content == f"{main.get_prefix(message.guild.id)}refusertout" and not main.check_channels_echanges(message.channel.id): #refuser toutes les demandes
             main.delete_all_echanges(message.author.id,2)
@@ -241,9 +245,10 @@ _Légende_ : `{main.get_prefix(message.guild.id)}commande [élement nécessaire]
               if main.check_dresseur_existe(message.mentions[0].id,message.guild.id):
                 if main.check_echange_ouvert(message.mentions[0].id,message.guild.id):
                   main.proposer_echange(message.author.id,message.mentions[0].id,message.guild.id,message.channel.id)
+                  prefix=main.get_prefix(message.guild.id)
                   await message.reply(
                       f"Le dresseur <@{message.author.id}> propose un **échange** avec le dresseur <@{message.mentions[0].id}> !\n\
-  <@{message.mentions[0].id}>, utilisez les commandes `{main.get_prefix(message.guild.id)}accepter @{message.author.name}` ou `{main.get_prefix(message.guild.id)}refuser @{message.author.name}`. <@{message.author.id}>, utilisez la commande `{main.get_prefix(message.guild.id)}annuler @{message.mentions[0].name}` à tout moment pour annuler cette proposition d'échange, ou `{main.get_prefix(message.guild.id)}annulertout` pour annuler toutes vos propositions d'échange en cours."
+  <@{message.mentions[0].id}>, utilisez les commandes `{prefix}accepter @{message.author.name}` ou `{prefix}refuser @{message.author.name}`. <@{message.author.id}>, utilisez la commande `{prefix}annuler @{message.mentions[0].name}` à tout moment pour annuler cette proposition d'échange, ou `{prefix}annulertout` pour annuler toutes vos propositions d'échange en cours."
                   )
                 else:
                   await message.reply(f"Désolé, ce dresseur n'accepte pas les propositions d'échange.")
