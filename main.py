@@ -200,7 +200,7 @@ def upgrade(dresseur,serveur,nb=1):
   id=cursor.fetchall()[0][0]
   cursor.execute(f"SELECT * from mots WHERE dresseur={id} AND serveur='{serveur}'")
   try : nb_mots=len(list(cursor.fetchall()[0]))
-  except IndexError: return(f"Désolé <@{dresseur}>, vous n'avez encore aucun mot !")
+  except IndexError: return(f"Désolé, vous n'avez encore aucun mot !")
   if nb_mots>1:
     dispo,nb_dispo=boosters_dispo(dresseur,serveur,nb)
     if dispo:
@@ -211,8 +211,8 @@ def upgrade(dresseur,serveur,nb=1):
       sqliteConnection.commit()
       update_rarete()
       return(f"Bravo <@{dresseur}> ! Vous avez sacrifié {nb} booster{'s' if nb!=1 else ''} et avez upgrade les mots suivants : {randomwords}. Il vous reste {nb_dispo-nb} boosters !")
-    else: return(f"Désolé <@{dresseur}>, vous n'avez que {nb_dispo} boosters !")
-  else: return(f"Désolé <@{dresseur}>, vous n'avez pas assez de mots !")
+    else: return(f"Désolé, vous n'avez que {nb_dispo} boosters !")
+  else: return(f"Désolé, vous n'avez pas assez de mots !")
 
 #___________________________________________
 
@@ -228,8 +228,7 @@ def info(dresseur,serveur,nom,auteur=None):
 :star: _Rareté la plus haute possédée_ : `{record[5] if record[5] else 'Aucune'}`\n\n\
 :slot_machine: _Score_ : `{record[2]}`\n\n\
 :trophy: _Position dans le Classement_ : `{pos_classement(dresseur,serveur)}`\n\n\
-:red_envelope: _Boosters disponibles_ : `{record[3]}`\n\n\
-||<@{auteur if auteur is not None else dresseur}>||")
+:red_envelope: _Boosters disponibles_ : `{record[3]}`")
 
 #___________________________________________
 
@@ -369,7 +368,7 @@ def echangetoggle(dresseur,serveur):
   cursor.execute(f"UPDATE dresseurs SET echangetoggle= CASE WHEN echangetoggle='OUVERT' THEN 'FERME' ELSE 'OUVERT' END WHERE nom='{dresseur}' AND serveur='{serveur}'")
   sqliteConnection.commit()
   cursor.execute(f"SELECT echangetoggle FROM dresseurs WHERE nom='{dresseur}' AND serveur='{serveur}'")
-  return(f"<@{dresseur}>, vos échanges sont maintenants **{cursor.fetchall()[0][0].replace('OUVERT','ouverts').replace('FERME','fermés')}**.")
+  return(f"Vos échanges sont maintenants **{cursor.fetchall()[0][0].replace('OUVERT','ouverts').replace('FERME','fermés')}**.")
 
 def check_echange_ouvert(dresseur,serveur):
   cursor.execute(f"SELECT echangetoggle FROM dresseurs WHERE nom='{dresseur}' AND serveur='{serveur}'")
