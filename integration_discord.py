@@ -76,34 +76,35 @@ Allez, il ne vous reste plus qu'à utiliser la commande `!kukujariv` pour début
           await message.reply(''.join([f"""**Commande** `{'` / `'.join([main.get_prefix(message.guild.id)+titre for titre in titres])}`:\n\n{info}\n\n""" for titres,info in zip(commande[0::2], commande[1::2])])+f"||<@{message.author.id}>||")
       except IndexError:
         await message.reply(f"**Commandes du bot Wordpacks**\n\n\
-`{main.get_prefix(message.guild.id)}intro` - Wordpacks c'est quoi ?\n\
-`{main.get_prefix(message.guild.id)}help` - afficher cette page. Il est possible d'utiliser `{main.get_prefix(message.guild.id)}help <commande>` pour afficher la description d'une commande.\n\
-`{main.get_prefix(message.guild.id)}wordpacksprefix [prefix]` - changer le prefix des commandes du bot WordPacks (`!` par défaut). Cette commande fonctionnera toujours avec `!wordpacksprefix` afin de pouvoir corriger d'éventuels changements accidentels. La taille maximale d'un prefix est de 5 caractères.\n\n\
+`{main.get_prefix(message.guild.id)}intro` **-** Wordpacks c'est quoi ?\n\
+`{main.get_prefix(message.guild.id)}help` **-** afficher cette page. Il est possible d'utiliser `{main.get_prefix(message.guild.id)}help <commande>` pour afficher la description d'une commande.\n\
+`{main.get_prefix(message.guild.id)}wordpacksprefix [prefix]` **-** changer le prefix des commandes du bot WordPacks (`!` par défaut). Cette commande fonctionnera toujours avec `!wordpacksprefix` afin de pouvoir corriger d'éventuels changements accidentels. La taille maximale d'un prefix est de 5 caractères.\n\n\
 <a:dresseur:958663675374370836> _Commandes relatives aux dresseurs_\n\n\
-`{main.get_prefix(message.guild.id)}kukujariv` / `{main.get_prefix(message.guild.id)}inscription` - s'inscrire en tant que dresseur.\n\
-`{main.get_prefix(message.guild.id)}info <dresseur>` - afficher diverses informations sur votre profil de dresseur. Il est possible d'afficher la carte d'infos d'un autre dresseur en le mentionnant.\n\
-`{main.get_prefix(message.guild.id)}classement` - afficher le classement des 10 meilleurs dresseurs, ainsi que votre position actuelle.\n\
-`{main.get_prefix(message.guild.id)}quitter` - supprimer votre profil de dresseur ainsi que tous vos mots, **définitivement**. Une confirmation vous sera demandée.\n\n\
+`{main.get_prefix(message.guild.id)}kukujariv` / `{main.get_prefix(message.guild.id)}inscription` **-** s'inscrire en tant que dresseur.\n\
+`{main.get_prefix(message.guild.id)}info <dresseur>` **-** afficher diverses informations sur votre profil de dresseur. Il est possible d'afficher la carte d'infos d'un autre dresseur en le mentionnant.\n\
+`{main.get_prefix(message.guild.id)}classement` **-** afficher le classement des 10 meilleurs dresseurs, ainsi que votre position actuelle.\n\
+`{main.get_prefix(message.guild.id)}quitter` **-** supprimer votre profil de dresseur ainsi que tous vos mots, **définitivement**. Une confirmation vous sera demandée.\n\n\
 <a:mokeball:958666482894643200> _Commandes relatives aux mots_\n\n\
-`{main.get_prefix(message.guild.id)}mokedex <dresseur>` - afficher les mots que vous possédez, ainsi que leur rareté. Les mots sont triés par rareté. Il est possible d'afficher le mokédex d'un autre dresseur en le mentionnant.\n\
-`{main.get_prefix(message.guild.id)}existe [mot]` / `{main.get_prefix(message.guild.id)}peutonpaké [mot]` - vérifier si un mot est obtenable dans un booster.\n\
-`{main.get_prefix(message.guild.id)}recherche [mot] <dresseur>` - vérifier si vous possédez un mot. Il est possible d'effectuer une recherche dans le mokédex d'un autre dresseur en le mentionnant.\n\
-`{main.get_prefix(message.guild.id)}booster` - ouvrir un booster de 3 mots ! Vous obtenez 3 boosters toutes les 12 heures.\n\
-`{main.get_prefix(message.guild.id)}megabooster` - ouvrir 3 boosters de 3 mots, pour 9 mots **SANS DOUBLONS** !\n\
-`{main.get_prefix(message.guild.id)}upgrade <nombre>` - sacrifier des boosters (1 de base) pour augmenter la rareté de 2 mots aléatoires de votre mokédex par booster sacrifié.\n\
-`{main.get_prefix(message.guild.id)}echange [dresseur]` - proposer un échange avec un dresseur.")
+`{main.get_prefix(message.guild.id)}mokedex <dresseur>` **-** afficher les mots que vous possédez, ainsi que leur rareté. Les mots sont triés par rareté. Il est possible d'afficher le mokédex d'un autre dresseur en le mentionnant.\n\
+`{main.get_prefix(message.guild.id)}existe [mot]` / `{main.get_prefix(message.guild.id)}peutonpaké [mot]` **-** vérifier si un mot est obtenable dans un booster.\n\
+`{main.get_prefix(message.guild.id)}recherche [mot] <dresseur>` **-** vérifier si vous possédez un mot. Il est possible d'effectuer une recherche dans le mokédex d'un autre dresseur en le mentionnant.\n\
+`{main.get_prefix(message.guild.id)}booster` **-** ouvrir un booster de 3 mots ! Vous obtenez 3 boosters toutes les 12 heures.\n\
+`{main.get_prefix(message.guild.id)}megabooster` **-** ouvrir 3 boosters de 3 mots, pour 9 mots **SANS DOUBLONS** !\n\
+`{main.get_prefix(message.guild.id)}upgrade <nombre>` **-** sacrifier des boosters (1 de base) pour augmenter la rareté de 2 mots aléatoires de votre mokédex par booster sacrifié.\n\
+`{main.get_prefix(message.guild.id)}echange [dresseur]` **-** proposer un échange avec un dresseur.")
         await message.reply(f"<:trade:958666805889601576> _Commandes relatives à l'échange_\n\n\
-`{main.get_prefix(message.guild.id)}echangetoggle` - activer/désactiver la possibilité pour les dresseurs de vous proposer des échanges.\n\
-`{main.get_prefix(message.guild.id)}accepter [dresseur]` - accepter la proposition d'échange d'un dresseur et créer un channel d'échange temporaire.\n\
-`{main.get_prefix(message.guild.id)}acceptertout` - accepter **toutes** les propositions d'échange et créer un channel d'échange temporaire pour chacune d'entre elles.\n\
-`{main.get_prefix(message.guild.id)}refuser [dresseur]` - refuser la proposition d'échange d'un dresseur.\n\
-`{main.get_prefix(message.guild.id)}refusertout` - refuser **toutes** les propositions d'échange que l'on vous a fait.\n\
-`{main.get_prefix(message.guild.id)}annuler [dresseur]` (en dehors d'un channel d'échange) - annuler la proposition d'échange faite à un dresseur.\n\
-`{main.get_prefix(message.guild.id)}annuler` (dans un channel d'échange) - annuler l'échange en cours et supprimer le channel temporaire.\n\
-`{main.get_prefix(message.guild.id)}annulertout` - annuler toutes les propositions d'échange que vous avez faites. Ceci n'annulera pas d'éventuels échanges en cours.\n\
-`{main.get_prefix(message.guild.id)}confirmer` (dans un channel d'échange) - compléter l'échange.\n\n\
+`{main.get_prefix(message.guild.id)}echangetoggle` **-** activer/désactiver la possibilité pour les dresseurs de vous proposer des échanges.\n\
+`{main.get_prefix(message.guild.id)}accepter [dresseur]` **-** accepter la proposition d'échange d'un dresseur et créer un channel d'échange temporaire.\n\
+`{main.get_prefix(message.guild.id)}acceptertout` **-** accepter **toutes** les propositions d'échange et créer un channel d'échange temporaire pour chacune d'entre elles.\n\
+`{main.get_prefix(message.guild.id)}refuser [dresseur]` **-** refuser la proposition d'échange d'un dresseur.\n\
+`{main.get_prefix(message.guild.id)}refusertout` **-** refuser **toutes** les propositions d'échange que l'on vous a fait.\n\
+`{main.get_prefix(message.guild.id)}annuler [dresseur]` **-** (en dehors d'un channel d'échange) annuler la proposition d'échange faite à un dresseur.\n\
+`{main.get_prefix(message.guild.id)}annuler` **-** (dans un channel d'échange) annuler l'échange en cours et supprimer le channel temporaire.\n\
+`{main.get_prefix(message.guild.id)}annulertout` **-** annuler toutes les propositions d'échange que vous avez faites. Ceci n'annulera pas d'éventuels échanges en cours.\n\
+`{main.get_prefix(message.guild.id)}confirmer` **-** (dans un channel d'échange) compléter l'échange.\n\n\
 :computer: _Commandes diverses_\n\n\
-`{main.get_prefix(message.guild.id)}listemots` - afficher la liste des mots obtenables dans un booster.")
+`{main.get_prefix(message.guild.id)}listemots` **-** afficher la liste des mots obtenables dans un booster.\n\n\
+_Légende_ : `{main.get_prefix(message.guild.id)}commande [élement nécessaire] <élement facultatif>` **-** description de la commande")
     elif message.content=="!wordpacksaddserver":
       main.ajouter_serveur(message.guild.id)
     elif message.content.startswith("!wordpacksprefix ") or message.content.startswith(f"{main.get_prefix(message.guild.id)}wordpacksprefix "):
